@@ -61,7 +61,7 @@ public class CassandraStore implements Store {
 
     @Override
     public void write(String lockId, UUID clientLockId, List<UUID> ackList, int ttl) throws RuntimeException {
-        BoundStatement boundStatement = writeStatement.newBoundStatement();
+        BoundStatement boundStatement = new BoundStatement(writeStatement);
         boundStatement.setConsistencyLevel(ConsistencyLevel.QUORUM);
         boundStatement.setString(0, lockId);
         boundStatement.setUUID(1, clientLockId);
@@ -72,7 +72,7 @@ public class CassandraStore implements Store {
 
     @Override
     public void delete(String lockId, UUID clientLockId) throws RuntimeException {
-        BoundStatement boundStatement = deleteStatement.newBoundStatement();
+        BoundStatement boundStatement = new BoundStatement(deleteStatement);
         boundStatement.setConsistencyLevel(ConsistencyLevel.QUORUM);
         boundStatement.setString(0, lockId);
         boundStatement.setUUID(1, clientLockId);
@@ -81,14 +81,14 @@ public class CassandraStore implements Store {
 
     @Override
     public List<UUIDTuple> read(String lockId) throws RuntimeException {
-        BoundStatement boundStatement = scanStatement.newBoundStatement();
+        BoundStatement boundStatement = new BoundStatement(scanStatement);
         boundStatement.setConsistencyLevel(ConsistencyLevel.QUORUM);
         boundStatement.setString(0, lockId);
         ResultSet resultSet = executeOrThrow(boundStatement);
 
         // we rely on the server/driver giving us the lists in sorted order, so we don't sort here.
 
-        List<Row> rows = resultSet.fetchAll();
+        List<Row> rows = resultSet.all();
         List<UUIDTuple> results = new ArrayList<>(rows.size());
         for(Row row : rows) {
             UUIDTuple result = new UUIDTuple(row.getUUID(0), row.getList(1, UUID.class));
