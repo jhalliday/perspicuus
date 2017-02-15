@@ -1,7 +1,22 @@
+/*
+ * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jboss.perspicuus.rest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
+import org.jboss.perspicuus.client.SchemaRegistryClient;
 import org.junit.Test;
 
 import javax.ws.rs.NotFoundException;
@@ -16,7 +31,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 /**
- * TODO doc me
+ * Test cases for the Schema Registry REST API layer.
  *
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
@@ -43,9 +58,8 @@ public class SchemaRegistryResourceIT {
 
     private Map<String,Object> getTestSchema() throws Exception {
         Map<String,Object> schemaOuterMap = new HashMap<>();
-        Map<String,Object> schemaInnerMap = new HashMap<>();
-        schemaInnerMap.put("type", "string");
-        schemaOuterMap.put("schema", objectMapper.writeValueAsString(schemaInnerMap));
+        Schema schema = SchemaBuilder.record("recordname").fields().name("fieldname").type().stringType().noDefault().endRecord();
+        schemaOuterMap.put("schema", schema.toString());
         return schemaOuterMap;
     }
 
@@ -142,7 +156,7 @@ public class SchemaRegistryResourceIT {
 
         assertEquals(expectedResult, actualResultMap);
 
-        result = client.target(URL_BASE + "/subjects/"+subject+"/versions/latest").request(CONTENT_TYPE).get(String.class);
+        result = client.target(URL_BASE + "/subjects/"+subject+"/versions/"+1).request(CONTENT_TYPE).get(String.class);
         actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
 
         assertEquals(expectedResult, actualResultMap);

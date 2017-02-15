@@ -34,7 +34,7 @@ public class StorageManager {
 
     public SchemaEntity findByHash(String schema) {
 
-        String hash = "" + schema.hashCode();
+        SchemaEntity schemaEntity = new SchemaEntity(schema);
 
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
@@ -44,7 +44,7 @@ public class StorageManager {
 
             entityManager.getTransaction().begin();
             TypedQuery<SchemaEntity> query = entityManager.createNamedQuery("SchemaEntity.byHash", SchemaEntity.class);
-            query.setParameter("hash", hash);
+            query.setParameter("hash", schemaEntity.hash);
             List<SchemaEntity> schemaEntities = query.getResultList();
 
             if (!schemaEntities.isEmpty()) {
@@ -128,9 +128,7 @@ public class StorageManager {
 
             SchemaEntity schemaEntity = findByHash(schema);
             if (schemaEntity == null) {
-                schemaEntity = new SchemaEntity();
-                schemaEntity.content = schema;
-                schemaEntity.hash = "" + schema.hashCode();
+                schemaEntity = new SchemaEntity(schema);
                 entityManager.persist(schemaEntity);
             }
             schemaId = schemaEntity.id;

@@ -12,6 +12,8 @@
  */
 package org.jboss.perspicuus.storage;
 
+import org.apache.avro.Schema;
+
 import javax.persistence.*;
 
 /**
@@ -35,4 +37,12 @@ public class SchemaEntity {
 
     @Column(nullable = false)
     public String content;
+
+    public SchemaEntity() {}
+
+    public SchemaEntity(String schema) {
+        Schema avroSchema = new Schema.Parser().parse(schema);
+        this.content = avroSchema.toString();
+        this.hash = ""+content.hashCode();
+    }
 }

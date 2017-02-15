@@ -37,7 +37,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.wildfly.swarm</groupId>
-                <artifactId>bom-all</artifactId>
+                <artifactId>bom</artifactId>
                 <version>${version.wildfly.swarm}</version>
                 <scope>import</scope>
                 <type>pom</type>
@@ -99,6 +99,12 @@
     </build>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.8.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.wildfly.swarm</groupId>
