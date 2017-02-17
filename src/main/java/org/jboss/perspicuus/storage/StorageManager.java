@@ -18,6 +18,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.TypedQuery;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -152,4 +153,50 @@ public class StorageManager {
         return schemaId;
     }
 
+    public TagCollectionEntity getTags(long id) {
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        TagCollectionEntity tagCollectionEntity = null;
+
+        try {
+
+            entityManager.getTransaction().begin();
+            tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
+
+        return tagCollectionEntity;
+    }
+
+    public void updateTag(long id, String key, String value) {
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        TagCollectionEntity tagCollectionEntity = null;
+
+        try {
+
+            entityManager.getTransaction().begin();
+            tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
+            if(tagCollectionEntity == null) {
+                tagCollectionEntity = new TagCollectionEntity();
+                tagCollectionEntity.id = id;
+                tagCollectionEntity.tags = new HashMap<>();
+            }
+            if(value != null) {
+                tagCollectionEntity.tags.put(key, value);
+            } else {
+                tagCollectionEntity.tags.remove(key);
+            }
+            entityManager.persist(tagCollectionEntity);
+            entityManager.getTransaction().commit();
+        } finally {
+            entityManager.close();
+        }
+
+    }
 }

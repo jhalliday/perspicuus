@@ -17,6 +17,7 @@ import org.apache.avro.SchemaBuilder;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -92,5 +93,46 @@ public class SchemaRegistryClientIT {
 
         id = schemaRegistryClient.getVersion(subject, 1);
         assertEquals(schemaId, id);
+    }
+
+    @Test
+    public void testTagCreateAndReadback() throws Exception {
+
+        long id = 4;
+        String key = "clientTestKey";
+        String value = "testValue";
+
+        schemaRegistryClient.annotate(id, key, value);
+
+        String result = schemaRegistryClient.getAnnotation(id, key);
+
+        assertEquals(value, result);
+
+        Map<String,String> resultMap = schemaRegistryClient.getAnnotations(id);
+
+        System.out.println("MAP: "+resultMap);
+
+        assertEquals(1, resultMap.size());
+        assertEquals(value, resultMap.get(key));
+    }
+
+    @Test
+    public void testTagDelete() throws Exception {
+
+        long id = 4;
+        String key = "clientTestKey";
+        String value = "testValue";
+
+        schemaRegistryClient.annotate(id, key, value);
+
+        String result = schemaRegistryClient.getAnnotation(id, key);
+
+        assertEquals(value, result);
+
+        schemaRegistryClient.deleteAnnotation(id, key);
+
+        result = schemaRegistryClient.getAnnotation(id, key);
+
+        assertNull(result);
     }
 }
