@@ -13,10 +13,7 @@
 package org.jboss.perspicuus.storage;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,28 +30,43 @@ public class StorageManager {
     @PersistenceUnit(unitName = "perspicuus")
     private EntityManagerFactory entityManagerFactory;
 
+    ThreadLocal<EntityManager> threadEntityManager = new ThreadLocal<>();
+
+    public void threadInit() {
+        EntityManager entityManager = threadEntityManager.get();
+        if(entityManager == null) {
+            entityManager = entityManagerFactory.createEntityManager();
+            threadEntityManager.set(entityManager);
+        }
+        entityManager.getTransaction().begin();
+    }
+
+    public void threadCleanup() {
+        EntityManager entityManager = threadEntityManager.get();
+        if(entityManager != null) {
+            EntityTransaction transaction = entityManager.getTransaction();
+            if(transaction.isActive()) {
+                transaction.rollback();
+            }
+            entityManager.close();
+            threadEntityManager.remove();
+        }
+    }
+
     public SchemaEntity findByHash(String schema) {
 
         SchemaEntity schemaEntity = new SchemaEntity(schema);
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = threadEntityManager.get();
 
         SchemaEntity result = null;
 
-        try {
+        TypedQuery<SchemaEntity> query = entityManager.createNamedQuery("SchemaEntity.byHash", SchemaEntity.class);
+        query.setParameter("hash", schemaEntity.hash);
+        List<SchemaEntity> schemaEntities = query.getResultList();
 
-            entityManager.getTransaction().begin();
-            TypedQuery<SchemaEntity> query = entityManager.createNamedQuery("SchemaEntity.byHash", SchemaEntity.class);
-            query.setParameter("hash", schemaEntity.hash);
-            List<SchemaEntity> schemaEntities = query.getResultList();
-
-            if (!schemaEntities.isEmpty()) {
-                result = schemaEntities.get(0);
-            }
-            entityManager.getTransaction().commit();
-
-        } finally {
-            entityManager.close();
+        if (!schemaEntities.isEmpty()) {
+            result = schemaEntities.get(0);
         }
 
         return result;
@@ -62,141 +74,98 @@ public class StorageManager {
 
     public SchemaEntity findSchema(long id) {
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = threadEntityManager.get();
 
         SchemaEntity schemaEntity = null;
 
-        try {
-
-            entityManager.getTransaction().begin();
-            schemaEntity = entityManager.find(SchemaEntity.class, id);
-            entityManager.getTransaction().commit();
-
-        } finally {
-            entityManager.close();
-        }
+        schemaEntity = entityManager.find(SchemaEntity.class, id);
 
         return schemaEntity;
     }
 
     public SubjectEntity findSubject(String name) {
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = threadEntityManager.get();
 
         SubjectEntity schemaEntity;
 
-        try {
-
-            entityManager.getTransaction().begin();
-            schemaEntity = entityManager.find(SubjectEntity.class, name);
-            entityManager.getTransaction().commit();
-
-        } finally {
-            entityManager.close();
-        }
+        schemaEntity = entityManager.find(SubjectEntity.class, name);
 
         return schemaEntity;
     }
 
     public List<String> listSubjectNames() {
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = threadEntityManager.get();
 
         List<String> results = null;
 
-        try {
-
-            entityManager.getTransaction().begin();
-            TypedQuery<String> query = entityManager.createNamedQuery("SubjectEntity.allNames", String.class);
-            results = query.getResultList();
-            entityManager.getTransaction().commit();
-
-        } finally {
-            entityManager.close();
-        }
+        TypedQuery<String> query = entityManager.createNamedQuery("SubjectEntity.allNames", String.class);
+        results = query.getResultList();
 
         return results;
     }
 
     public long register(String subject, String schema) {
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = threadEntityManager.get();
 
         long schemaId = -1L;
 
-        try {
-            entityManager.getTransaction().begin();
-
-            SchemaEntity schemaEntity = findByHash(schema);
-            if (schemaEntity == null) {
-                schemaEntity = new SchemaEntity(schema);
-                entityManager.persist(schemaEntity);
-            }
-            schemaId = schemaEntity.id;
-
-            SubjectEntity subjectEntity = entityManager.find(SubjectEntity.class, subject);
-            if (subjectEntity == null) {
-                subjectEntity = new SubjectEntity();
-                subjectEntity.name = subject;
-                subjectEntity.schemaIds = new ArrayList<>();
-            }
-            subjectEntity.schemaIds.add(schemaId);
-
-            entityManager.persist(subjectEntity);
-
-            entityManager.getTransaction().commit();
-
-        } finally {
-            entityManager.close();
+        SchemaEntity schemaEntity = findByHash(schema);
+        if (schemaEntity == null) {
+            schemaEntity = new SchemaEntity(schema);
+            entityManager.persist(schemaEntity);
         }
+        schemaId = schemaEntity.id;
+
+        SubjectEntity subjectEntity = entityManager.find(SubjectEntity.class, subject);
+        if (subjectEntity == null) {
+            subjectEntity = new SubjectEntity();
+            subjectEntity.name = subject;
+            subjectEntity.schemaIds = new ArrayList<>();
+        }
+        subjectEntity.schemaIds.add(schemaId);
+
+        entityManager.persist(subjectEntity);
+
+        entityManager.getTransaction().commit();
+        entityManager.getTransaction().begin();
 
         return schemaId;
     }
 
     public TagCollectionEntity getTags(long id) {
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = threadEntityManager.get();
 
         TagCollectionEntity tagCollectionEntity = null;
 
-        try {
-
-            entityManager.getTransaction().begin();
-            tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
-            entityManager.getTransaction().commit();
-
-        } finally {
-            entityManager.close();
-        }
+        tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
 
         return tagCollectionEntity;
     }
 
     public void updateTag(long id, String key, String value) {
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = threadEntityManager.get();
 
         TagCollectionEntity tagCollectionEntity = null;
 
-        try {
-
-            entityManager.getTransaction().begin();
-            tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
-            if(tagCollectionEntity == null) {
-                tagCollectionEntity = new TagCollectionEntity();
-                tagCollectionEntity.id = id;
-                tagCollectionEntity.tags = new HashMap<>();
-            }
-            if(value != null) {
-                tagCollectionEntity.tags.put(key, value);
-            } else {
-                tagCollectionEntity.tags.remove(key);
-            }
-            entityManager.persist(tagCollectionEntity);
-            entityManager.getTransaction().commit();
-        } finally {
-            entityManager.close();
+        tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
+        if(tagCollectionEntity == null) {
+            tagCollectionEntity = new TagCollectionEntity();
+            tagCollectionEntity.id = id;
+            tagCollectionEntity.tags = new HashMap<>();
         }
+        if(value != null) {
+            tagCollectionEntity.tags.put(key, value);
+        } else {
+            tagCollectionEntity.tags.remove(key);
+        }
+        entityManager.persist(tagCollectionEntity);
 
+        entityManager.getTransaction().commit();
+        entityManager.getTransaction().begin();
     }
 }
