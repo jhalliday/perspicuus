@@ -110,8 +110,6 @@ public class SchemaRegistryClientIT {
 
         Map<String,String> resultMap = schemaRegistryClient.getAnnotations(id);
 
-        System.out.println("MAP: "+resultMap);
-
         assertEquals(1, resultMap.size());
         assertEquals(value, resultMap.get(key));
     }

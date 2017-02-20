@@ -16,7 +16,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
-import org.jboss.perspicuus.client.SchemaRegistryClient;
 import org.junit.Test;
 
 import javax.ws.rs.NotFoundException;
