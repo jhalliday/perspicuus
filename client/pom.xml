@@ -24,6 +24,7 @@
     <name>JBoss Perspicuus</name>
 
     <properties>
+        <version.wildfly.swarm>2017.1.1</version.wildfly.swarm>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -37,6 +38,52 @@
     <build>
 
         <plugins>
+
+            <plugin>
+                <groupId>org.wildfly.swarm</groupId>
+                <artifactId>wildfly-swarm-plugin</artifactId>
+                <version>${version.wildfly.swarm}</version>
+                <executions>
+
+                    <execution>
+                        <id>package</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>start</id>
+                        <phase>none</phase>
+                    </execution>
+
+                    <execution>
+                        <id>multistart</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>multistart</goal>
+                        </goals>
+                        <configuration>
+                            <processes>
+                                <!-- meh. https://issues.jboss.org/browse/SWARM-1102
+                                for now run manually with:
+                                 server$> java -jar target/server-0.1.0-SNAPSHOT-swarm.jar
+                                <process>
+                                    <artifactId>server</artifactId>
+                                </process>
+                                 -->
+                            </processes>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <!--<goals>-->
+                            <!--<goal>stop</goal>-->
+                        <!--</goals>-->
+                    </execution>
+
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -81,5 +128,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.perspicuus</groupId>
+            <artifactId>server</artifactId>
+            <type>war</type>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
+
 </project>

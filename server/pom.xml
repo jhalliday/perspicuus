@@ -46,7 +46,7 @@
     </dependencyManagement>
 
     <build>
-        <finalName>perspicuus</finalName>
+        <!--<finalName>perspicuus</finalName>-->
         <plugins>
             <plugin>
                 <groupId>org.wildfly.swarm</groupId>
