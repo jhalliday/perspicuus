@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Client for communicating with a remote Schema Registory server.
+ * Client for communicating with a remote Schema Registry server.
  *
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)

@@ -77,7 +77,7 @@
                         <id>stop</id>
                         <phase>post-integration-test</phase>
                         <!--<goals>-->
-                            <!--<goal>stop</goal>-->
+                        <!--<goal>stop</goal>-->
                         <!--</goals>-->
                     </execution>
 
@@ -119,6 +119,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.7.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-catalyst_2.10</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <dependency>
