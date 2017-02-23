@@ -105,6 +105,18 @@
             <artifactId>avro</artifactId>
             <version>1.8.1</version>
         </dependency>
+        <!-- avro brings in jackson implicitly, but hibernate-search throws
+                it away unless we explicitly force it to remain: -->
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+            <version>1.9.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
+        </dependency>
 
         <dependency>
             <groupId>org.wildfly.swarm</groupId>
@@ -125,6 +137,10 @@
         <dependency>
             <groupId>org.wildfly.swarm</groupId>
             <artifactId>jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.swarm</groupId>
+            <artifactId>hibernate-search</artifactId>
         </dependency>
 
         <dependency>
@@ -151,6 +167,7 @@
             <version>3.1.0.Final</version>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
 </project>

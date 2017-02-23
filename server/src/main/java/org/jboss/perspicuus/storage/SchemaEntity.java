@@ -13,6 +13,8 @@
 package org.jboss.perspicuus.storage;
 
 import org.apache.avro.Schema;
+import org.hibernate.search.annotations.*;
+import org.hibernate.search.annotations.Index;
 
 import javax.persistence.*;
 
@@ -26,6 +28,7 @@ import javax.persistence.*;
 @NamedQueries({
         @NamedQuery(name = "SchemaEntity.byHash", query = "SELECT e FROM SchemaEntity e WHERE e.hash=:hash")
 })
+@Indexed
 public class SchemaEntity {
 
     @Id
@@ -36,6 +39,7 @@ public class SchemaEntity {
     public String hash;
 
     @Column(nullable = false)
+    @Field(name="content", bridge = @FieldBridge(impl = AvroSchemaStringBridge.class))
     public String content;
 
     public SchemaEntity() {}
