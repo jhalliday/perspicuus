@@ -32,18 +32,24 @@ public class AvroSchemaStringBridge implements StringBridge {
     @Override
     public String objectToString(Object object) {
 
-        System.out.println("testtesttest");
+        String string = (String)object;
 
-        Schema avroSchema = new Schema.Parser().parse((String)object);
-        List<String> tokens = new ArrayList<>();
+        if(string.startsWith("{")) {
 
-        tokens.add(avroSchema.getName());
+            Schema avroSchema = new Schema.Parser().parse((String) object);
+            List<String> tokens = new ArrayList<>();
 
-        for(Schema.Field field : avroSchema.getFields()) {
-            tokens.add(field.name());
+            tokens.add(avroSchema.getName());
+
+            for (Schema.Field field : avroSchema.getFields()) {
+                tokens.add(field.name());
+            }
+
+            String result = String.join(" ", tokens);
+            return result;
+
+        } else {
+            return string;
         }
-
-        String result = String.join(" ", tokens);
-        return result;
     }
 }

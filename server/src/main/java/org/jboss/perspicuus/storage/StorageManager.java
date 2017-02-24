@@ -12,6 +12,10 @@
  */
 package org.jboss.perspicuus.storage;
 
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -167,5 +171,26 @@ public class StorageManager {
 
         entityManager.getTransaction().commit();
         entityManager.getTransaction().begin();
+    }
+
+    public List<Long> findMatchingSchemaIds(String searchTerm) {
+
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(threadEntityManager.get());
+
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(SchemaEntity.class).get();
+
+        org.apache.lucene.search.Query luceneQuery = queryBuilder.keyword().onField("content").matching(searchTerm).createQuery();
+
+        Query fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
+
+        List<SchemaEntity> results = fullTextQuery.getResultList();
+
+        List<Long> ids = new ArrayList<>(results.size());
+
+        for(SchemaEntity schemaEntity : results) {
+            ids.add(schemaEntity.id);
+        }
+
+        return ids;
     }
 }
