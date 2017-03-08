@@ -13,8 +13,9 @@
             <property name="hibernate.show_sql" value="true" />
             <property name="hibernate.hbm2ddl.auto" value="create" />
 
+            <!-- 'ram' for test, 'filesystem' for prod -->
             <property name="hibernate.search.default.directory_provider"
-                      value="filesystem"/>
+                      value="ram"/>
             <property name="hibernate.search.default.indexBase"
                       value="/tmp/lucene/indexes"/>
 

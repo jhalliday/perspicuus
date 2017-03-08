@@ -33,7 +33,16 @@ public class SchemaRegistryClientIT {
     private final SchemaRegistryClient schemaRegistryClient = new SchemaRegistryClient("http://localhost:8080");
 
     private Schema getTestSchema() throws Exception {
-        Schema schema = SchemaBuilder.record("recordname").fields().name("fieldname").type().stringType().noDefault().endRecord();
+        Schema schema = getCustomTestSchema("recordname", new String[] {"fieldname"});
+        return schema;
+    }
+
+    private Schema getCustomTestSchema(String subject, String[] fieldnames) throws Exception {
+        SchemaBuilder.FieldAssembler<Schema> fieldAssembler = SchemaBuilder.record(subject).fields();
+        for(String fieldname : fieldnames) {
+            fieldAssembler.name(fieldname).type().stringType().noDefault();
+        }
+        Schema schema = fieldAssembler.endRecord();
         return schema;
     }
 
@@ -133,4 +142,32 @@ public class SchemaRegistryClientIT {
 
         assertNull(result);
     }
+
+    @Test
+    public void testSearchForMatchingFieldname() throws Exception {
+
+        long firstId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldone", "fieldtwo"}).toString() );
+        long secondId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldthree", "fieldfour"}).toString() );
+
+        List<Long> ids = schemaRegistryClient.findSchemasMatching("fieldthree");
+
+        assertEquals(1, ids.size());
+        assertEquals((Long)secondId, ids.get(0));
+    }
+
+    @Test
+    public void testSearchForSimilarSchemas() throws Exception {
+
+        long firstId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}).toString() );
+        long secondId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}).toString() );
+
+        List<Long> ids = schemaRegistryClient.findSimilarSchemas(firstId);
+
+        // should match at least self and similar, plus maybe others - depending on order the tests run the index may not be empty when we start
+        assertTrue( ids.size() >= 2);
+
+        assertEquals((Long)firstId, ids.get(0));
+        assertEquals((Long)secondId, ids.get(1));
+    }
+
 }

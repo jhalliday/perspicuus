@@ -173,6 +173,7 @@ public class StorageManager {
         entityManager.getTransaction().begin();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Long> findMatchingSchemaIds(String searchTerm) {
 
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(threadEntityManager.get());
@@ -186,6 +187,28 @@ public class StorageManager {
         List<SchemaEntity> results = fullTextQuery.getResultList();
 
         List<Long> ids = new ArrayList<>(results.size());
+
+        for(SchemaEntity schemaEntity : results) {
+            ids.add(schemaEntity.id);
+        }
+
+        return ids;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Long> findSimilarSchemaIds(long id) {
+
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(threadEntityManager.get());
+
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(SchemaEntity.class).get();
+
+        org.apache.lucene.search.Query luceneQuery = queryBuilder.moreLikeThis().comparingField("content").toEntityWithId(id).createQuery();
+
+        Query fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
+
+        List<SchemaEntity> results = fullTextQuery.getResultList();
+
+        List<Long> ids = new ArrayList<>();
 
         for(SchemaEntity schemaEntity : results) {
             ids.add(schemaEntity.id);

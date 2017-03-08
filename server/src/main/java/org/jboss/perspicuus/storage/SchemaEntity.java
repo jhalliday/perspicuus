@@ -39,7 +39,7 @@ public class SchemaEntity {
     public String hash;
 
     @Column(nullable = false)
-    @Field(name="content", bridge = @FieldBridge(impl = AvroSchemaStringBridge.class))
+    @Field(name="content", store = Store.YES, bridge = @FieldBridge(impl = AvroSchemaStringBridge.class))
     public String content;
 
     public SchemaEntity() {}

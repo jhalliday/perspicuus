@@ -21,10 +21,10 @@
     <artifactId>client</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
-    <name>JBoss Perspicuus</name>
+    <name>JBoss Perspicuus (Client)</name>
 
     <properties>
-        <version.wildfly.swarm>2017.1.1</version.wildfly.swarm>
+        <version.wildfly.swarm>2017.3.2</version.wildfly.swarm>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>

@@ -68,13 +68,29 @@ public class SchemaRecommendationResourceIT {
     @Test
     public void testSearchForMatchingFieldname() throws Exception {
 
-        long firstId = registerSchema("recommendationSubject", getTestSchema(new String[] { "fieldone", "fieldtwo"}));
-        long secondId = registerSchema("recommendationSubject", getTestSchema(new String[] { "fieldthree", "fieldfour"}));
+        long firstId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldone", "fieldtwo"}));
+        long secondId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldthree", "fieldfour"}));
 
         String result = client.target(URL_BASE+"/schemas/matching/fieldthree").request(CONTENT_TYPE).get(String.class);
-        List<Long> subjects = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
 
-        assertEquals(1, subjects.size());
-        assertEquals((Long)secondId, subjects.get(0));
+        assertEquals(1, ids.size());
+        assertEquals((Long)secondId, ids.get(0));
+    }
+
+    @Test
+    public void testSearchForSimilarSchemas() throws Exception {
+
+        long firstId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
+        long secondId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
+
+        String result = client.target(URL_BASE+"/schemas/similar/"+firstId).request(CONTENT_TYPE).get(String.class);
+        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+
+        // should match at least self and similar, plus maybe others - depending on order the tests run the index may not be empty when we start
+        assertTrue( ids.size() >= 2);
+
+        assertEquals((Long)firstId, ids.get(0));
+        assertEquals((Long)secondId, ids.get(1));
     }
 }

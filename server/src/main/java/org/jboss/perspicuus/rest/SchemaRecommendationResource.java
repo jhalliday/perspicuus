@@ -44,6 +44,17 @@ public class SchemaRecommendationResource {
     public List<Long> findMatchingSchemaIds(@PathParam("searchTerm") String searchTerm) {
         logger.debugv("findMatchingSchemaIds {0}", searchTerm);
 
-        return storageManager.findMatchingSchemaIds(searchTerm);
+        List<Long> ids = storageManager.findMatchingSchemaIds(searchTerm);
+        return ids;
     }
+
+    @GET
+    @Path("/schemas/similar/{searchTerm}")
+    public List<Long> findSimilarSchemaIds(@PathParam("searchTerm") Long id) {
+        logger.debugv("findSimilarSchemaIds {0}", id);
+
+        List<Long> ids = storageManager.findSimilarSchemaIds(id);
+        return ids;
+    }
+
 }

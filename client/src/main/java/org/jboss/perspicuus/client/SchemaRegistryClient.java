@@ -203,4 +203,20 @@ public class SchemaRegistryClient {
             return null;
         }
     }
+
+    public List<Long> findSchemasMatching(String searchTerm) throws Exception {
+
+        String result = client.target(serverURL+"/schemas/matching/"+searchTerm).request(CONTENT_TYPE).get(String.class);
+        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+
+        return ids;
+    }
+
+    public List<Long> findSimilarSchemas(long id) throws Exception {
+
+        String result = client.target(serverURL+"/schemas/similar/"+id).request(CONTENT_TYPE).get(String.class);
+        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+
+        return ids;
+    }
 }
