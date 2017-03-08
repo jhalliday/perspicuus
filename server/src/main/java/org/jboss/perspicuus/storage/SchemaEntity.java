@@ -15,8 +15,12 @@ package org.jboss.perspicuus.storage;
 import org.apache.avro.Schema;
 import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
+import sun.security.provider.MD5;
 
 import javax.persistence.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * Storage layer representation of a Schema.
@@ -47,6 +51,16 @@ public class SchemaEntity {
     public SchemaEntity(String schema) {
         Schema avroSchema = new Schema.Parser().parse(schema);
         this.content = avroSchema.toString();
-        this.hash = ""+content.hashCode();
+
+        try {
+            // https://avro.apache.org/docs/current/spec.html#Schema+Fingerprints
+            // recommends MD5 or SHA-256, both of which are present as standard in java
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            messageDigest.update(content.getBytes());
+            byte[] digestBytes = messageDigest.digest();
+            this.hash = Arrays.toString(digestBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
