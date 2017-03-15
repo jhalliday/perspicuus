@@ -14,8 +14,6 @@ package org.jboss.perspicuus.storage;
 
 import org.apache.avro.Schema;
 import org.hibernate.search.annotations.*;
-import org.hibernate.search.annotations.Index;
-import sun.security.provider.MD5;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
