@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Client for communicating with a remote Schema Registry server.
@@ -218,5 +219,29 @@ public class SchemaRegistryClient {
         List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
 
         return ids;
+    }
+
+    public Set<Long> getSchemaGroupMembers(long groupId) throws Exception {
+
+        String result = client.target(serverURL+"/groups/"+groupId).request(CONTENT_TYPE).get(String.class);
+        Set<Long> ids = objectMapper.readValue(result, new TypeReference<Set<Long>>() {});
+
+        return ids;
+    }
+
+    public long createGroup() throws Exception {
+
+        String result = client.target(serverURL+"/groups").request().post(Entity.json("{}"), String.class);
+        return Long.parseLong(result);
+    }
+
+    public void addSchemaToGroup(long groupId, long schemaId) throws Exception {
+
+        client.target(serverURL+"/groups/"+groupId+"/"+schemaId).request().put(Entity.json(""));
+    }
+
+    public void removeSchemaFromGroup(long groupId, long schemaId) throws Exception {
+
+        client.target(serverURL+"/groups/"+groupId+"/"+schemaId).request().delete();
     }
 }

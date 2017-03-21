@@ -16,8 +16,11 @@ import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.junit.Test;
 
+import javax.ws.rs.client.Entity;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -170,4 +173,21 @@ public class SchemaRegistryClientIT {
         assertEquals((Long)secondId, ids.get(1));
     }
 
+    @Test
+    public void testGroupLifecycle() throws Exception {
+
+        long groupId = schemaRegistryClient.createGroup();
+
+        schemaRegistryClient.addSchemaToGroup(groupId, 100);
+
+        Set<Long> members = schemaRegistryClient.getSchemaGroupMembers(groupId);
+
+        assertEquals(1, members.size());
+        assertEquals(new Long(100), members.iterator().next());
+
+        schemaRegistryClient.removeSchemaFromGroup(groupId, 100);
+
+        members = schemaRegistryClient.getSchemaGroupMembers(groupId);
+        assertTrue(members.isEmpty());
+    }
 }

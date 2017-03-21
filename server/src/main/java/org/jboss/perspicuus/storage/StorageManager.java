@@ -21,6 +21,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Storage layer functions. Uses JDBC database via JPA.
@@ -150,13 +151,66 @@ public class StorageManager {
         return tagCollectionEntity;
     }
 
+    public Set<Long> getSchemaGroupMembers(long groupId) {
+        EntityManager entityManager = threadEntityManager.get();
+
+        SchemaGroupEntity schemaGroupEntity = entityManager.find(SchemaGroupEntity.class, groupId);
+        if(schemaGroupEntity == null) {
+            return null;
+        }
+
+        return schemaGroupEntity.schemaIds;
+    }
+
+    public long registerGroup() {
+        EntityManager entityManager = threadEntityManager.get();
+
+        SchemaGroupEntity schemaGroupEntity = new SchemaGroupEntity();
+
+        entityManager.persist(schemaGroupEntity);
+        long id = schemaGroupEntity.id;
+
+        entityManager.getTransaction().commit();
+        entityManager.getTransaction().begin();
+
+        return id;
+    }
+
+    public boolean addSchemaToGroup(long groupId, long memberId) {
+        return alterSchemaGroup(groupId, memberId, true);
+    }
+
+    public boolean removeSchemaFromGroup(long groupId, long memberId) {
+        return alterSchemaGroup(groupId, memberId, false);
+    }
+
+    protected boolean alterSchemaGroup(long groupId, long memberId, boolean addition) {
+
+        EntityManager entityManager = threadEntityManager.get();
+
+        SchemaGroupEntity schemaGroupEntity = entityManager.find(SchemaGroupEntity.class, groupId);
+        if(schemaGroupEntity == null) {
+            return false;
+        }
+
+        if(addition) {
+            schemaGroupEntity.schemaIds.add(memberId);
+        } else {
+            schemaGroupEntity.schemaIds.remove(memberId);
+        }
+        entityManager.persist(schemaGroupEntity);
+
+        entityManager.getTransaction().commit();
+        entityManager.getTransaction().begin();
+
+        return true;
+    }
+
     public void updateTag(long id, String key, String value) {
 
         EntityManager entityManager = threadEntityManager.get();
 
-        TagCollectionEntity tagCollectionEntity = null;
-
-        tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
+        TagCollectionEntity tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
         if(tagCollectionEntity == null) {
             tagCollectionEntity = new TagCollectionEntity();
             tagCollectionEntity.id = id;

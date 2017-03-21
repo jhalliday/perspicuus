@@ -34,7 +34,7 @@ import java.util.Arrays;
 public class SchemaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     public Long id;
 
     @Column(nullable = false, unique = true)
