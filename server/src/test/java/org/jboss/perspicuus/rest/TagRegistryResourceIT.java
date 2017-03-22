@@ -44,15 +44,15 @@ public class TagRegistryResourceIT {
     public void testCreateAndReadback() throws Exception {
 
         try {
-            client.target(URL_BASE+"/tags/schemas/1").request(CONTENT_TYPE).get(String.class);
+            client.target(URL_BASE+"/tags/1").request(CONTENT_TYPE).get(String.class);
             fail("Should throw NotFound");
         } catch (NotFoundException e) {
             // expected
         }
 
-        client.target(URL_BASE+"/tags/schemas/1/testkey").request(CONTENT_TYPE).post(Entity.json("testvalue"), String.class);
+        client.target(URL_BASE+"/tags/1/testkey").request(CONTENT_TYPE).post(Entity.json("testvalue"), String.class);
 
-        String resultString = client.target(URL_BASE+"/tags/schemas/1").request(CONTENT_TYPE).get(String.class);
+        String resultString = client.target(URL_BASE+"/tags/1").request(CONTENT_TYPE).get(String.class);
         Map<String,String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,String>>() {});
 
         assertEquals(1, resultMap.size());
@@ -63,19 +63,19 @@ public class TagRegistryResourceIT {
     public void testReadGroupAndIndividual() throws Exception {
 
         // create two key-value pairs
-        client.target(URL_BASE+"/tags/schemas/2/testkey1").request(CONTENT_TYPE).post(Entity.json("testvalue1"), String.class);
-        client.target(URL_BASE+"/tags/schemas/2/testkey2").request(CONTENT_TYPE).post(Entity.json("testvalue2"), String.class);
+        client.target(URL_BASE+"/tags/2/testkey1").request(CONTENT_TYPE).post(Entity.json("testvalue1"), String.class);
+        client.target(URL_BASE+"/tags/2/testkey2").request(CONTENT_TYPE).post(Entity.json("testvalue2"), String.class);
 
         //make sure we can read back separately
 
-        String resultString = client.target(URL_BASE+"/tags/schemas/2/testkey1").request(CONTENT_TYPE).get(String.class);
+        String resultString = client.target(URL_BASE+"/tags/2/testkey1").request(CONTENT_TYPE).get(String.class);
         Map<String,String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,String>>() {});
         assertEquals(1, resultMap.size());
         assertEquals("testvalue1", resultMap.get("testkey1"));
 
         // and read back together
 
-        resultString = client.target(URL_BASE+"/tags/schemas/2").request(CONTENT_TYPE).get(String.class);
+        resultString = client.target(URL_BASE+"/tags/2").request(CONTENT_TYPE).get(String.class);
         resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,String>>() {});
         assertEquals(2, resultMap.size());
         assertEquals("testvalue1", resultMap.get("testkey1"));
@@ -85,16 +85,16 @@ public class TagRegistryResourceIT {
     @Test
     public void testDelete() throws Exception {
 
-        client.target(URL_BASE+"/tags/schemas/3/testkey").request(CONTENT_TYPE).post(Entity.json("testvalue"), String.class);
+        client.target(URL_BASE+"/tags/3/testkey").request(CONTENT_TYPE).post(Entity.json("testvalue"), String.class);
 
-        String resultString = client.target(URL_BASE+"/tags/schemas/3/testkey").request(CONTENT_TYPE).get(String.class);
+        String resultString = client.target(URL_BASE+"/tags/3/testkey").request(CONTENT_TYPE).get(String.class);
         Map<String,String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,String>>() {});
         assertEquals(1, resultMap.size());
 
-        client.target(URL_BASE+"/tags/schemas/3/testkey").request(CONTENT_TYPE).delete();
+        client.target(URL_BASE+"/tags/3/testkey").request(CONTENT_TYPE).delete();
 
         try {
-            client.target(URL_BASE+"/tags/schemas/3/testkey").request(CONTENT_TYPE).get(String.class);
+            client.target(URL_BASE+"/tags/3/testkey").request(CONTENT_TYPE).get(String.class);
             fail("Should throw NotFound");
         } catch(NotFoundException e) {
             // expected

@@ -42,9 +42,9 @@ public class TagRegistryResource {
     StorageManager storageManager;
 
     @GET
-    @Path("/tags/schemas/{id}")
-    public Map<String,String> getTagsForSchema(@PathParam("id") Long id) {
-        logger.debugv("getTagsForSchema {0}", id);
+    @Path("/tags/{id}")
+    public Map<String,String> getTags(@PathParam("id") Long id) {
+        logger.debugv("getTags {0}", id);
 
         TagCollectionEntity tagCollectionEntity = storageManager.getTags(id);
 
@@ -56,11 +56,11 @@ public class TagRegistryResource {
     }
 
     @GET
-    @Path("/tags/schemas/{id}/{key}")
-    public Map<String,String> getTagForSchema(@PathParam("id") Long id, @PathParam("key") String key) {
-        logger.debugv("getTagForSchema {0} {1}", id, key);
+    @Path("/tags/{id}/{key}")
+    public Map<String,String> getTag(@PathParam("id") Long id, @PathParam("key") String key) {
+        logger.debugv("getTag {0} {1}", id, key);
 
-        Map<String,String> tags = getTagsForSchema(id);
+        Map<String,String> tags = getTags(id);
 
         String value = tags.get(key);
 
@@ -75,17 +75,17 @@ public class TagRegistryResource {
     }
 
     @POST
-    @Path("/tags/schemas/{id}/{key}")
-    public void updateTagForSchema(@PathParam("id") Long id, @PathParam("key") String key, String request) {
-        logger.debugv("updateTagForSchema {0} {1}", id, key);
+    @Path("/tags/{id}/{key}")
+    public void updateTag(@PathParam("id") Long id, @PathParam("key") String key, String request) {
+        logger.debugv("updateTag {0} {1}", id, key);
 
         storageManager.updateTag(id, key, request);
     }
 
     @DELETE
-    @Path("/tags/schemas/{id}/{key}")
-    public void removeTagForSchema(@PathParam("id") Long id, @PathParam("key") String key) {
-        logger.debugv("updateTagForSchema {0} {1}", id, key);
+    @Path("/tags/{id}/{key}")
+    public void removeTag(@PathParam("id") Long id, @PathParam("key") String key) {
+        logger.debugv("updateTag {0} {1}", id, key);
 
         storageManager.updateTag(id, key, null);
     }

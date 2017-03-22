@@ -172,21 +172,21 @@ public class SchemaRegistryClient {
     }
 
 
-    public void annotate(long schemaId, String key, String value) throws IOException {
-        client.target(serverURL+"/tags/schemas/"+schemaId+"/"+key).request(CONTENT_TYPE).post(Entity.json(value), String.class);
+    public void annotate(long objectId, String key, String value) throws IOException {
+        client.target(serverURL+"/tags/"+objectId+"/"+key).request(CONTENT_TYPE).post(Entity.json(value), String.class);
     }
 
     public void deleteAnnotation(long schemaId, String key) throws IOException {
         try {
-            client.target(serverURL + "/tags/schemas/" + schemaId + "/" + key).request(CONTENT_TYPE).delete();
+            client.target(serverURL + "/tags/" + schemaId + "/" + key).request(CONTENT_TYPE).delete();
         } catch(NotFoundException e) {
             return;
         }
     }
 
-    public Map<String,String> getAnnotations(long schemaId) throws IOException {
+    public Map<String,String> getAnnotations(long objectId) throws IOException {
         try {
-            String resultString = client.target(serverURL + "/tags/schemas/" + schemaId).request(CONTENT_TYPE).get(String.class);
+            String resultString = client.target(serverURL + "/tags/" + objectId).request(CONTENT_TYPE).get(String.class);
             Map<String, String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String, String>>() {
             });
             return resultMap;
@@ -195,9 +195,9 @@ public class SchemaRegistryClient {
         }
     }
 
-    public String getAnnotation(long schemaId, String key) throws IOException {
+    public String getAnnotation(long objectId, String key) throws IOException {
         try {
-            String resultString = client.target(serverURL + "/tags/schemas/" + schemaId + "/" + key).request(CONTENT_TYPE).get(String.class);
+            String resultString = client.target(serverURL + "/tags/" + objectId + "/" + key).request(CONTENT_TYPE).get(String.class);
             Map<String, String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String, String>>() {});
             return resultMap.get(key);
         } catch (NotFoundException e) {
