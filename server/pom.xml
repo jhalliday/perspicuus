@@ -168,6 +168,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.swarm</groupId>
+            <artifactId>swagger</artifactId>
+            <version>${version.wildfly.swarm}</version>
+        </dependency>
+
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>6.0.5</version>
