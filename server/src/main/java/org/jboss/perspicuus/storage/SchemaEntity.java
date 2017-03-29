@@ -13,12 +13,16 @@
 package org.jboss.perspicuus.storage;
 
 import org.apache.avro.Schema;
+import org.apache.avro.SchemaValidationException;
+import org.apache.avro.SchemaValidator;
+import org.apache.avro.SchemaValidatorBuilder;
 import org.hibernate.search.annotations.*;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Storage layer representation of a Schema.
@@ -59,6 +63,21 @@ public class SchemaEntity {
             this.hash = Arrays.toString(digestBytes);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean isCompatibleWith(String firstSchema, String secondSchema) {
+
+        SchemaValidator schemaValidator = new SchemaValidatorBuilder().mutualReadStrategy().validateAll();
+
+        Schema firstAvroSchema = new Schema.Parser().parse(firstSchema);
+        Schema secondAvroSchema = new Schema.Parser().parse(secondSchema);
+
+        try {
+            schemaValidator.validate(firstAvroSchema, Collections.singletonList(secondAvroSchema));
+            return true;
+        } catch (SchemaValidationException e) {
+            return false;
         }
     }
 }

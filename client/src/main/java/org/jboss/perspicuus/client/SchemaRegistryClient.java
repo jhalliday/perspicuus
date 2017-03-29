@@ -244,4 +244,18 @@ public class SchemaRegistryClient {
 
         client.target(serverURL+"/groups/"+groupId+"/"+schemaId).request().delete();
     }
+
+    public boolean determineCompatibility(String subject, String version, String schema) throws Exception {
+
+        Map<String,Object> requestMap = new HashMap<>();
+        requestMap.put("schema", schema);
+        String requestString = objectMapper.writeValueAsString(requestMap);
+
+        String result = client.target(serverURL+"/subjects/"+subject+"/versions/"+version).request(CONTENT_TYPE).post(Entity.json(requestString), String.class);
+
+        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+        Boolean isCompatible = (Boolean)actualResultMap.get("is_compatible");
+
+        return isCompatible;
+    }
 }

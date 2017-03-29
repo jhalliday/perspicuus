@@ -191,6 +191,30 @@ public class SchemaRegistryResource {
 
     }
 
+    public static class CompatibilityReport {
+        public final boolean is_compatible;
+
+        public CompatibilityReport(boolean isCompatible) {
+            is_compatible = isCompatible;
+        }
+    }
+
+    @POST
+    @Path("/subjects/{subject}/versions/{version}")
+    public CompatibilityReport determineCompatibility(@PathParam("subject") String subject,
+                                                      @PathParam("version") String version,
+                                                      TerseSchema request) {
+        logger.debugv("determineCompatibility({0} {1} {2})", subject, version, request.schema);
+
+        VerboseSchema verboseSchema = getSchema(subject, version);
+
+        boolean isCompatible = SchemaEntity.isCompatibleWith(verboseSchema.schema, request.schema);
+
+        CompatibilityReport compatibilityReport = new CompatibilityReport(isCompatible);
+
+        return compatibilityReport;
+    }
+
     public static class RegisterResponse {
         public final long id;
 

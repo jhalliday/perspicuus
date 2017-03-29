@@ -160,4 +160,35 @@ public class SchemaRegistryResourceIT {
 
         assertEquals(expectedResult, actualResultMap);
     }
+
+    @Test
+    public void testCompatibility() throws Exception {
+
+        String subject = "compatibilitysubject";
+
+        Map<String,Object> schema = getTestSchema();
+
+        long schemaId = registerSchema(subject, schema);
+
+        String schemaString = objectMapper.writeValueAsString(schema);
+
+        String result = client.target(URL_BASE+"/subjects/"+subject+"/versions/1").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
+
+        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+        Boolean isCompatible = (Boolean)actualResultMap.get("is_compatible");
+
+        assertTrue(isCompatible);
+
+        schema.clear();
+        Schema schemaObject = SchemaBuilder.record("recordname").fields().name("fieldname").type().intType().noDefault().endRecord();
+        schema.put("schema", schemaObject.toString());
+        schemaString = objectMapper.writeValueAsString(schema);
+
+        result = client.target(URL_BASE+"/subjects/"+subject+"/versions/1").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
+
+        actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+        isCompatible = (Boolean)actualResultMap.get("is_compatible");
+
+        assertFalse(isCompatible);
+    }
 }

@@ -16,8 +16,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.junit.Test;
 
-import javax.ws.rs.client.Entity;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -189,5 +187,27 @@ public class SchemaRegistryClientIT {
 
         members = schemaRegistryClient.getSchemaGroupMembers(groupId);
         assertTrue(members.isEmpty());
+    }
+
+    @Test
+    public void testCompatibility() throws Exception {
+
+        String subject = "compatibilitysubject";
+
+        schemaRegistryClient.registerSchema(subject, getTestSchema().toString());
+
+        Schema compatibleSchema = getTestSchema();
+
+        boolean isCompatible = schemaRegistryClient.determineCompatibility(subject, "latest", compatibleSchema.toString());
+
+        assertTrue(isCompatible);
+
+        SchemaBuilder.FieldAssembler<Schema> fieldAssembler = SchemaBuilder.record("recordname").fields();
+        fieldAssembler.name("fieldname").type().intType().noDefault();
+        Schema incompatibleSchema = fieldAssembler.endRecord();
+
+        isCompatible = schemaRegistryClient.determineCompatibility(subject, "latest", incompatibleSchema.toString());
+
+        assertFalse(isCompatible);
     }
 }

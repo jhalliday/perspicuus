@@ -167,6 +167,7 @@
             <artifactId>hibernate-search</artifactId>
         </dependency>
 
+        <!-- https://issues.jboss.org/browse/SWARM-944 -->
         <dependency>
             <groupId>org.wildfly.swarm</groupId>
             <artifactId>swagger</artifactId>
