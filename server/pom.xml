@@ -25,7 +25,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <version.wildfly.swarm>2017.3.2</version.wildfly.swarm>
+        <version.wildfly.swarm>2017.3.3</version.wildfly.swarm>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -79,6 +79,11 @@
                     </execution>
 
                 </executions>
+
+                <configuration>
+                    <bundleDependencies>true</bundleDependencies>
+                    <!--<debug>5005</debug>-->
+                </configuration>
             </plugin>
 
             <!-- use bytecode enhancement to workaround proxy problems until the proper fix
@@ -158,6 +163,11 @@
             <groupId>org.wildfly.swarm</groupId>
             <artifactId>jaxrs-cdi</artifactId>
         </dependency>
+        <!-- https://issues.jboss.org/browse/SWARM-1259 -->
+        <dependency>
+            <groupId>org.wildfly.swarm</groupId>
+            <artifactId>jaxrs-jsonp</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.swarm</groupId>
             <artifactId>jpa</artifactId>
@@ -198,7 +208,6 @@
             <version>3.1.0.Final</version>
             <scope>test</scope>
         </dependency>
-
 
     </dependencies>
 </project>
