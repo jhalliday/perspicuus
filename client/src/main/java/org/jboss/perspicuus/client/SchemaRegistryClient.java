@@ -52,7 +52,7 @@ public class SchemaRegistryClient {
      * @return
      * @throws IOException
      */
-    public Schema getSchema(long id) throws IOException {
+    public Schema getSchema(int id) throws IOException {
         try {
             String resultString = client.target(serverURL + "/schemas/ids/"+id).request(CONTENT_TYPE).get(String.class);
             Map<String,Object> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,Object>>() {});
@@ -72,10 +72,10 @@ public class SchemaRegistryClient {
      * @return
      * @throws IOException
      */
-    public List<Long> listVersions(String subject) throws IOException {
+    public List<Integer> listVersions(String subject) throws IOException {
         try {
             String resultString = client.target(serverURL + "/subjects/"+subject+"/versions").request(CONTENT_TYPE).get(String.class);
-            List<Long> versionList = objectMapper.readValue(resultString, new TypeReference<List<Long>>() {});
+            List<Integer> versionList = objectMapper.readValue(resultString, new TypeReference<List<Integer>>() {});
             return versionList;
         } catch (NotFoundException e) {
             return null;
@@ -89,7 +89,7 @@ public class SchemaRegistryClient {
      * @return
      * @throws IOException
      */
-    public long getLatestVersion(String subject) throws IOException {
+    public int getLatestVersion(String subject) throws IOException {
         return getVersion(subject, "latest");
     }
 
@@ -101,16 +101,16 @@ public class SchemaRegistryClient {
      * @return
      * @throws IOException
      */
-    public long getVersion(String subject, int version) throws IOException {
+    public int getVersion(String subject, int version) throws IOException {
         return getVersion(subject, ""+version);
     }
 
-    protected long getVersion(String subject, String version) throws IOException {
+    protected int getVersion(String subject, String version) throws IOException {
         try {
             String resultString = client.target(serverURL + "/subjects/"+subject+"/versions/"+version).request(CONTENT_TYPE).get(String.class);
             Map<String,Object> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,Object>>() {});
             int id = (Integer) resultMap.get("id");
-            return (long) id;
+            return id;
         } catch (NotFoundException e) {
             return -1;
         }
@@ -160,7 +160,7 @@ public class SchemaRegistryClient {
      * @return
      * @throws IOException
      */
-    public long registerSchema(String subject, String schema) throws IOException {
+    public int registerSchema(String subject, String schema) throws IOException {
         Map<String,Object> requestMap = new HashMap<>();
         requestMap.put("schema", schema);
         String requestString = objectMapper.writeValueAsString(requestMap);
@@ -168,15 +168,15 @@ public class SchemaRegistryClient {
                 .request(CONTENT_TYPE).post(Entity.json(requestString), String.class);
         Map<String, Object> resultMap = objectMapper.readValue(result, new TypeReference<Map<String, Object>>() {});
         int id = (Integer) resultMap.get("id");
-        return (long) id;
+        return id;
     }
 
 
-    public void annotate(long objectId, String key, String value) throws IOException {
+    public void annotate(int objectId, String key, String value) throws IOException {
         client.target(serverURL+"/tags/"+objectId+"/"+key).request(CONTENT_TYPE).post(Entity.json(value), String.class);
     }
 
-    public void deleteAnnotation(long schemaId, String key) throws IOException {
+    public void deleteAnnotation(int schemaId, String key) throws IOException {
         try {
             client.target(serverURL + "/tags/" + schemaId + "/" + key).request(CONTENT_TYPE).delete();
         } catch(NotFoundException e) {
@@ -184,7 +184,7 @@ public class SchemaRegistryClient {
         }
     }
 
-    public Map<String,String> getAnnotations(long objectId) throws IOException {
+    public Map<String,String> getAnnotations(int objectId) throws IOException {
         try {
             String resultString = client.target(serverURL + "/tags/" + objectId).request(CONTENT_TYPE).get(String.class);
             Map<String, String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String, String>>() {
@@ -195,7 +195,7 @@ public class SchemaRegistryClient {
         }
     }
 
-    public String getAnnotation(long objectId, String key) throws IOException {
+    public String getAnnotation(int objectId, String key) throws IOException {
         try {
             String resultString = client.target(serverURL + "/tags/" + objectId + "/" + key).request(CONTENT_TYPE).get(String.class);
             Map<String, String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String, String>>() {});
@@ -205,42 +205,42 @@ public class SchemaRegistryClient {
         }
     }
 
-    public List<Long> findSchemasMatching(String searchTerm) throws Exception {
+    public List<Integer> findSchemasMatching(String searchTerm) throws Exception {
 
         String result = client.target(serverURL+"/schemas/matching/"+searchTerm).request(CONTENT_TYPE).get(String.class);
-        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+        List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
 
         return ids;
     }
 
-    public List<Long> findSimilarSchemas(long id) throws Exception {
+    public List<Integer> findSimilarSchemas(int id) throws Exception {
 
         String result = client.target(serverURL+"/schemas/similar/"+id).request(CONTENT_TYPE).get(String.class);
-        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+        List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
 
         return ids;
     }
 
-    public Set<Long> getSchemaGroupMembers(long groupId) throws Exception {
+    public Set<Integer> getSchemaGroupMembers(int groupId) throws Exception {
 
         String result = client.target(serverURL+"/groups/"+groupId).request(CONTENT_TYPE).get(String.class);
-        Set<Long> ids = objectMapper.readValue(result, new TypeReference<Set<Long>>() {});
+        Set<Integer> ids = objectMapper.readValue(result, new TypeReference<Set<Integer>>() {});
 
         return ids;
     }
 
-    public long createGroup() throws Exception {
+    public int createGroup() throws Exception {
 
         String result = client.target(serverURL+"/groups").request().post(Entity.json("{}"), String.class);
-        return Long.parseLong(result);
+        return Integer.parseInt(result);
     }
 
-    public void addSchemaToGroup(long groupId, long schemaId) throws Exception {
+    public void addSchemaToGroup(int groupId, int schemaId) throws Exception {
 
         client.target(serverURL+"/groups/"+groupId+"/"+schemaId).request().put(Entity.json(""));
     }
 
-    public void removeSchemaFromGroup(long groupId, long schemaId) throws Exception {
+    public void removeSchemaFromGroup(int groupId, int schemaId) throws Exception {
 
         client.target(serverURL+"/groups/"+groupId+"/"+schemaId).request().delete();
     }

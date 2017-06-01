@@ -77,7 +77,7 @@ public class StorageManager {
         return result;
     }
 
-    public SchemaEntity findSchema(long id) {
+    public SchemaEntity findSchema(int id) {
 
         EntityManager entityManager = threadEntityManager.get();
 
@@ -111,11 +111,11 @@ public class StorageManager {
         return results;
     }
 
-    public long register(String subject, String schema) {
+    public int register(String subject, String schema) {
 
         EntityManager entityManager = threadEntityManager.get();
 
-        long schemaId = -1L;
+        int schemaId = -1;
 
         SchemaEntity schemaEntity = findByHash(schema);
         if (schemaEntity == null) {
@@ -140,7 +140,7 @@ public class StorageManager {
         return schemaId;
     }
 
-    public TagCollectionEntity getTags(long id) {
+    public TagCollectionEntity getTags(int id) {
 
         EntityManager entityManager = threadEntityManager.get();
 
@@ -151,7 +151,7 @@ public class StorageManager {
         return tagCollectionEntity;
     }
 
-    public Set<Long> getSchemaGroupMembers(long groupId) {
+    public Set<Integer> getSchemaGroupMembers(int groupId) {
         EntityManager entityManager = threadEntityManager.get();
 
         SchemaGroupEntity schemaGroupEntity = entityManager.find(SchemaGroupEntity.class, groupId);
@@ -162,13 +162,13 @@ public class StorageManager {
         return schemaGroupEntity.schemaIds;
     }
 
-    public long registerGroup() {
+    public int registerGroup() {
         EntityManager entityManager = threadEntityManager.get();
 
         SchemaGroupEntity schemaGroupEntity = new SchemaGroupEntity();
 
         entityManager.persist(schemaGroupEntity);
-        long id = schemaGroupEntity.id;
+        int id = schemaGroupEntity.id;
 
         entityManager.getTransaction().commit();
         entityManager.getTransaction().begin();
@@ -176,15 +176,15 @@ public class StorageManager {
         return id;
     }
 
-    public boolean addSchemaToGroup(long groupId, long memberId) {
+    public boolean addSchemaToGroup(int groupId, int memberId) {
         return alterSchemaGroup(groupId, memberId, true);
     }
 
-    public boolean removeSchemaFromGroup(long groupId, long memberId) {
+    public boolean removeSchemaFromGroup(int groupId, int memberId) {
         return alterSchemaGroup(groupId, memberId, false);
     }
 
-    protected boolean alterSchemaGroup(long groupId, long memberId, boolean addition) {
+    protected boolean alterSchemaGroup(int groupId, int memberId, boolean addition) {
 
         EntityManager entityManager = threadEntityManager.get();
 
@@ -206,7 +206,7 @@ public class StorageManager {
         return true;
     }
 
-    public void updateTag(long id, String key, String value) {
+    public void updateTag(int id, String key, String value) {
 
         EntityManager entityManager = threadEntityManager.get();
 
@@ -228,7 +228,7 @@ public class StorageManager {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Long> findMatchingSchemaIds(String searchTerm) {
+    public List<Integer> findMatchingSchemaIds(String searchTerm) {
 
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(threadEntityManager.get());
 
@@ -240,7 +240,7 @@ public class StorageManager {
 
         List<SchemaEntity> results = fullTextQuery.getResultList();
 
-        List<Long> ids = new ArrayList<>(results.size());
+        List<Integer> ids = new ArrayList<>(results.size());
 
         for(SchemaEntity schemaEntity : results) {
             ids.add(schemaEntity.id);
@@ -250,7 +250,7 @@ public class StorageManager {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Long> findSimilarSchemaIds(long id) {
+    public List<Integer> findSimilarSchemaIds(int id) {
 
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(threadEntityManager.get());
 
@@ -262,7 +262,7 @@ public class StorageManager {
 
         List<SchemaEntity> results = fullTextQuery.getResultList();
 
-        List<Long> ids = new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
 
         for(SchemaEntity schemaEntity : results) {
             ids.add(schemaEntity.id);

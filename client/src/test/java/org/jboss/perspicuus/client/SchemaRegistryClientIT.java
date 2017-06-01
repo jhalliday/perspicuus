@@ -55,7 +55,7 @@ public class SchemaRegistryClientIT {
         String subject = "clienttestsubject";
         Schema localSchema = getTestSchema();
 
-        long schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
+        int schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
 
         Schema remoteSchema = schemaRegistryClient.getSchema(schemaId);
 
@@ -73,7 +73,7 @@ public class SchemaRegistryClientIT {
 
         assertNull( schemaRegistryClient.findInSubject(subject, localSchema) );
 
-        long schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
+        int schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
 
         Schema remoteSchema = schemaRegistryClient.findInSubject(subject, localSchema);
 
@@ -92,13 +92,13 @@ public class SchemaRegistryClientIT {
 
         assertEquals(-1, schemaRegistryClient.getVersion(subject, 1) );
 
-        long schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
+        int schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
 
-        List<Long> versions = schemaRegistryClient.listVersions(subject);
+        List<Integer> versions = schemaRegistryClient.listVersions(subject);
         assertEquals(1, versions.size());
-        assertEquals(new Long(schemaId), versions.get(0));
+        assertEquals(new Integer(schemaId), versions.get(0));
 
-        long id = schemaRegistryClient.getLatestVersion(subject);
+        int id = schemaRegistryClient.getLatestVersion(subject);
         assertEquals(schemaId, id);
 
         id = schemaRegistryClient.getVersion(subject, 1);
@@ -108,7 +108,7 @@ public class SchemaRegistryClientIT {
     @Test
     public void testTagCreateAndReadback() throws Exception {
 
-        long id = 4;
+        int id = 4;
         String key = "clientTestKey";
         String value = "testValue";
 
@@ -127,7 +127,7 @@ public class SchemaRegistryClientIT {
     @Test
     public void testTagDelete() throws Exception {
 
-        long id = 4;
+        int id = 4;
         String key = "clientTestKey";
         String value = "testValue";
 
@@ -147,41 +147,41 @@ public class SchemaRegistryClientIT {
     @Test
     public void testSearchForMatchingFieldname() throws Exception {
 
-        long firstId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldone", "fieldtwo"}).toString() );
-        long secondId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldthree", "fieldfour"}).toString() );
+        int firstId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldone", "fieldtwo"}).toString() );
+        int secondId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldthree", "fieldfour"}).toString() );
 
-        List<Long> ids = schemaRegistryClient.findSchemasMatching("fieldthree");
+        List<Integer> ids = schemaRegistryClient.findSchemasMatching("fieldthree");
 
         assertEquals(1, ids.size());
-        assertEquals((Long)secondId, ids.get(0));
+        assertEquals((Integer)secondId, ids.get(0));
     }
 
     @Test
     public void testSearchForSimilarSchemas() throws Exception {
 
-        long firstId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}).toString() );
-        long secondId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}).toString() );
+        int firstId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}).toString() );
+        int secondId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}).toString() );
 
-        List<Long> ids = schemaRegistryClient.findSimilarSchemas(firstId);
+        List<Integer> ids = schemaRegistryClient.findSimilarSchemas(firstId);
 
         // should match at least self and similar, plus maybe others - depending on order the tests run the index may not be empty when we start
         assertTrue( ids.size() >= 2);
 
-        assertEquals((Long)firstId, ids.get(0));
-        assertEquals((Long)secondId, ids.get(1));
+        assertEquals((Integer)firstId, ids.get(0));
+        assertEquals((Integer)secondId, ids.get(1));
     }
 
     @Test
     public void testGroupLifecycle() throws Exception {
 
-        long groupId = schemaRegistryClient.createGroup();
+        int groupId = schemaRegistryClient.createGroup();
 
         schemaRegistryClient.addSchemaToGroup(groupId, 100);
 
-        Set<Long> members = schemaRegistryClient.getSchemaGroupMembers(groupId);
+        Set<Integer> members = schemaRegistryClient.getSchemaGroupMembers(groupId);
 
         assertEquals(1, members.size());
-        assertEquals(new Long(100), members.iterator().next());
+        assertEquals(new Integer(100), members.iterator().next());
 
         schemaRegistryClient.removeSchemaFromGroup(groupId, 100);
 

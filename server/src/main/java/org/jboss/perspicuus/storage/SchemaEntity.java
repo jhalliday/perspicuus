@@ -39,7 +39,7 @@ public class SchemaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public Long id;
+    public Integer id;
 
     @Column(nullable = false, unique = true)
     public String hash;

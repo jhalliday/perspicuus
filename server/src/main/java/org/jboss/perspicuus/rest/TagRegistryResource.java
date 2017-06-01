@@ -12,6 +12,7 @@
  */
 package org.jboss.perspicuus.rest;
 
+import io.swagger.annotations.*;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 import org.jboss.perspicuus.storage.TagCollectionEntity;
@@ -27,6 +28,7 @@ import java.util.Map;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
+@Api(value = "tags")
 @Path("/")
 @Produces({"application/vnd.schemaregistry.v1+json",
         "application/vnd.schemaregistry+json; qs=0.9",
@@ -41,9 +43,13 @@ public class TagRegistryResource {
     @Inject
     StorageManager storageManager;
 
+    @ApiOperation(value = "Retrieve the contents of a tag collection")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @GET
     @Path("/tags/{id}")
-    public Map<String,String> getTags(@PathParam("id") Long id) {
+    public Map<String,String> getTags(@PathParam("id") Integer id) {
         logger.debugv("getTags {0}", id);
 
         TagCollectionEntity tagCollectionEntity = storageManager.getTags(id);
@@ -55,9 +61,13 @@ public class TagRegistryResource {
         return tagCollectionEntity.tags;
     }
 
+    @ApiOperation(value = "Retrieve a single tag from a collection")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @GET
     @Path("/tags/{id}/{key}")
-    public Map<String,String> getTag(@PathParam("id") Long id, @PathParam("key") String key) {
+    public Map<String,String> getTag(@PathParam("id") Integer id, @PathParam("key") String key) {
         logger.debugv("getTag {0} {1}", id, key);
 
         Map<String,String> tags = getTags(id);
@@ -74,17 +84,20 @@ public class TagRegistryResource {
         return result;
     }
 
+    @ApiOperation(value = "Modify (add/update) a tag within a collection")
     @POST
     @Path("/tags/{id}/{key}")
-    public void updateTag(@PathParam("id") Long id, @PathParam("key") String key, String request) {
+    public void updateTag(@PathParam("id") int id, @PathParam("key") String key,
+                          @ApiParam(name = "content", value = "Tag Value", required = false) String request) {
         logger.debugv("updateTag {0} {1}", id, key);
 
         storageManager.updateTag(id, key, request);
     }
 
+    @ApiOperation(value = "Remove a tag from a collection")
     @DELETE
     @Path("/tags/{id}/{key}")
-    public void removeTag(@PathParam("id") Long id, @PathParam("key") String key) {
+    public void removeTag(@PathParam("id") Integer id, @PathParam("key") String key) {
         logger.debugv("updateTag {0} {1}", id, key);
 
         storageManager.updateTag(id, key, null);

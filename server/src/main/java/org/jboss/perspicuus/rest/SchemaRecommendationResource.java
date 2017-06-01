@@ -12,6 +12,8 @@
  */
 package org.jboss.perspicuus.rest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 
@@ -25,6 +27,7 @@ import java.util.List;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
+@Api(value = "recommendations")
 @Path("/")
 @Produces({"application/vnd.schemaregistry.v1+json",
         "application/vnd.schemaregistry+json; qs=0.9",
@@ -39,21 +42,23 @@ public class SchemaRecommendationResource {
     @Inject
     StorageManager storageManager;
 
+    @ApiOperation(value = "Retrieve Ids of schemas matching the query term")
     @GET
     @Path("/schemas/matching/{searchTerm}")
-    public List<Long> findMatchingSchemaIds(@PathParam("searchTerm") String searchTerm) {
+    public List<Integer> findMatchingSchemaIds(@PathParam("searchTerm") String searchTerm) {
         logger.debugv("findMatchingSchemaIds {0}", searchTerm);
 
-        List<Long> ids = storageManager.findMatchingSchemaIds(searchTerm);
+        List<Integer> ids = storageManager.findMatchingSchemaIds(searchTerm);
         return ids;
     }
 
+    @ApiOperation(value = "Retrieve Ids of schemas having similarity to the given schema")
     @GET
     @Path("/schemas/similar/{searchTerm}")
-    public List<Long> findSimilarSchemaIds(@PathParam("searchTerm") Long id) {
+    public List<Integer> findSimilarSchemaIds(@PathParam("searchTerm") Integer id) {
         logger.debugv("findSimilarSchemaIds {0}", id);
 
-        List<Long> ids = storageManager.findSimilarSchemaIds(id);
+        List<Integer> ids = storageManager.findSimilarSchemaIds(id);
         return ids;
     }
 

@@ -39,7 +39,7 @@ public class MetadataClient {
 
     public StructType resolve(String key) throws IOException {
 
-        long id = schemaRegistryClient.getLatestVersion(key);
+        int id = schemaRegistryClient.getLatestVersion(key);
         Schema avroSchema = schemaRegistryClient.getSchema(id);
 
         List<StructField> definedFields = new ArrayList<>(avroSchema.getFields().size());

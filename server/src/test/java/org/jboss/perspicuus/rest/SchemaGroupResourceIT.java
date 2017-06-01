@@ -40,9 +40,9 @@ public class SchemaGroupResourceIT {
 
     private final Client client = ClientBuilder.newClient();
 
-    private List<Long> getMembers(long groupId) throws IOException {
+    private List<Integer> getMembers(int groupId) throws IOException {
         String result = client.target(URL_BASE+"/groups/"+groupId).request(CONTENT_TYPE).get(String.class);
-        List<Long> memberList = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+        List<Integer> memberList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
         return memberList;
     }
 
@@ -53,14 +53,14 @@ public class SchemaGroupResourceIT {
 
         client.target(URL_BASE+"/groups/"+groupId+"/1").request(CONTENT_TYPE).put(Entity.json("{}"), String.class);
 
-        List<Long> membersList = getMembers(Long.parseLong(groupId));
+        List<Integer> membersList = getMembers(Integer.parseInt(groupId));
 
         assertEquals(1, membersList.size());
-        assertEquals(new Long(1), membersList.get(0));
+        assertEquals(new Integer(1), membersList.get(0));
 
         client.target(URL_BASE+"/groups/"+groupId+"/1").request(CONTENT_TYPE).delete();
 
-        membersList = getMembers(Long.parseLong(groupId));
+        membersList = getMembers(Integer.parseInt(groupId));
         assertTrue(membersList.isEmpty());
     }
 }

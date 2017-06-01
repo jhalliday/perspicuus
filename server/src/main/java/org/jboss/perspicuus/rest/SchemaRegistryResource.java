@@ -12,6 +12,10 @@
  */
 package org.jboss.perspicuus.rest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 import org.jboss.perspicuus.storage.SchemaEntity;
@@ -31,6 +35,7 @@ import java.util.Set;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
+@Api(value = "registry")
 @Path("/")
 @Produces({"application/vnd.schemaregistry.v1+json",
         "application/vnd.schemaregistry+json; qs=0.9",
@@ -53,7 +58,7 @@ public class SchemaRegistryResource {
     // some request/response use a schema decorated with context information
     public static class VerboseSchema {
         public String schema;
-        public long id;
+        public int id;
         public String subject;
         public int version;
     }
@@ -86,10 +91,13 @@ public class SchemaRegistryResource {
         }
     }
 
-    // retrieve a schema by id number
+    @ApiOperation(value = "Retrieve a schema by id number")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @GET
     @Path("/schemas/ids/{id}")
-    public TerseSchema getSchema(@PathParam("id") Long id) {
+    public TerseSchema getSchema(@PathParam("id") Integer id) {
         logger.debugv("getSchema {0}", id);
 
         SchemaEntity schemaEntity = storageManager.findSchema(id);
@@ -103,7 +111,10 @@ public class SchemaRegistryResource {
         return terseSchema;
     }
 
-    // locate a schema within the given subject scope.
+    @ApiOperation(value = "Locate a schema within the given subject scope")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @POST
     @Path("/subjects/{subject}")
     public TerseSchema scopedSearch(@PathParam("subject") String subject, TerseSchema request) {
@@ -124,7 +135,7 @@ public class SchemaRegistryResource {
         return terseSchema;
     }
 
-    // list all known subjects
+    @ApiOperation(value = "List all known subjects")
     @GET
     @Path("/subjects")
     public Set<String> listSubjectNames() {
@@ -134,10 +145,13 @@ public class SchemaRegistryResource {
         return new HashSet<>(resultList);
     }
 
-    // list all schema ids for the given subject
+    @ApiOperation(value = "List all schema ids for the given subject")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @GET
     @Path("/subjects/{subject}/versions")
-    public List<Long> listSubjectSchemaIds(@PathParam("subject") String subject) {
+    public List<Integer> listSubjectSchemaIds(@PathParam("subject") String subject) {
         logger.debugv("listSubjectSchemaIds {0}", subject);
 
         SubjectEntity subjectEntity = storageManager.findSubject(subject);
@@ -149,13 +163,16 @@ public class SchemaRegistryResource {
         return subjectEntity.schemaIds;
     }
 
-    // retrieve a specific version of the schema for a given subject.
     // 'latest' is a valid version, otherwise number 1-N
+    @ApiOperation(value = "Retrieve a specific version of the schema for a given subject")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @GET
     @Path("/subjects/{subject}/versions/{version}")
-    public VerboseSchema getSchema(@PathParam("subject") String subject,
-                                   @PathParam("version") String version) {
-        logger.debugv("getSchema {0} {1}", subject, version);
+    public VerboseSchema getSchemaInScope(@PathParam("subject") String subject,
+                                          @PathParam("version") String version) {
+        logger.debugv("getSchemaInScope {0} {1}", subject, version);
 
         SubjectEntity subjectEntity = storageManager.findSubject(subject);
 
@@ -163,7 +180,7 @@ public class SchemaRegistryResource {
             throw new CustomNotFoundException();
         }
 
-        long schemaId = 0;
+        int schemaId = 0;
         int resolvedVersion = 0;
         if("latest".equalsIgnoreCase(version)) {
             resolvedVersion = subjectEntity.schemaIds.size();
@@ -199,6 +216,10 @@ public class SchemaRegistryResource {
         }
     }
 
+    @ApiOperation(value = "Test compatibility of the provided schema against an existing one from the repository")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @POST
     @Path("/subjects/{subject}/versions/{version}")
     public CompatibilityReport determineCompatibility(@PathParam("subject") String subject,
@@ -206,7 +227,7 @@ public class SchemaRegistryResource {
                                                       TerseSchema request) {
         logger.debugv("determineCompatibility({0} {1} {2})", subject, version, request.schema);
 
-        VerboseSchema verboseSchema = getSchema(subject, version);
+        VerboseSchema verboseSchema = getSchemaInScope(subject, version);
 
         boolean isCompatible = SchemaEntity.isCompatibleWith(verboseSchema.schema, request.schema);
 
@@ -216,20 +237,20 @@ public class SchemaRegistryResource {
     }
 
     public static class RegisterResponse {
-        public final long id;
+        public final int id;
 
-        public RegisterResponse(long id) {
+        public RegisterResponse(int id) {
             this.id = id;
         }
     }
 
-    // register a new schema, adding it to the given topic
+    @ApiOperation(value = "Register a new schema, adding it to the given topic")
     @POST
     @Path("/subjects/{subject}/versions")
     public RegisterResponse addSchema(@PathParam("subject") String subject, TerseSchema request) {
         logger.debugv("addSchema {0} {1}", subject, request);
 
-        long id = storageManager.register(subject, request.schema);
+        int id = storageManager.register(subject, request.schema);
 
         RegisterResponse registerResponse = new RegisterResponse(id);
 

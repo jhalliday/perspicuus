@@ -12,6 +12,10 @@
  */
 package org.jboss.perspicuus.rest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 
@@ -25,6 +29,7 @@ import java.util.Set;
  * @since 2017-03
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
+@Api(value = "groups")
 @Path("/")
 @Produces({"application/vnd.schemaregistry.v1+json",
         "application/vnd.schemaregistry+json; qs=0.9",
@@ -39,12 +44,16 @@ public class SchemaGroupResource {
     @Inject
     StorageManager storageManager;
 
+    @ApiOperation(value = "Retrieve group member schema Ids")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @GET
     @Path("/groups/{groupId}")
-    public Set<Long> getSchemaGroupMembers(@PathParam("groupId") long groupId) {
+    public Set<Integer> getSchemaGroupMembers(@PathParam("groupId") int groupId) {
         logger.debugv("getSchemaGroupMembers {0}", groupId);
 
-        Set<Long> resultSet = storageManager.getSchemaGroupMembers(groupId);
+        Set<Integer> resultSet = storageManager.getSchemaGroupMembers(groupId);
         if(resultSet == null) {
             throw new NotFoundException();
         }
@@ -52,17 +61,22 @@ public class SchemaGroupResource {
         return resultSet;
     }
 
+    @ApiOperation(value = "Create a new group")
     @POST
     @Path("/groups")
-    public long registerGroup() {
+    public int registerGroup() {
         logger.debugv("registerGroup");
 
         return storageManager.registerGroup();
     }
 
+    @ApiOperation(value = "Add a schema to a group")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @PUT
     @Path("/groups/{groupId}/{schemaId}")
-    public void addSchemaToGroup(@PathParam("groupId") long groupId, @PathParam("schemaId") long schemaId) {
+    public void addSchemaToGroup(@PathParam("groupId") int groupId, @PathParam("schemaId") int schemaId) {
         logger.debugv("addSchemaToGroup {0} {1}", groupId, schemaId);
 
         boolean success = storageManager.addSchemaToGroup(groupId, schemaId);
@@ -71,9 +85,13 @@ public class SchemaGroupResource {
         }
     }
 
+    @ApiOperation(value = "Remove a schema from a group")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
     @DELETE
     @Path("/groups/{groupId}/{schemaId}")
-    public void removeSchemaFromGroup(@PathParam("groupId") long groupId, @PathParam("schemaId") long schemaId) {
+    public void removeSchemaFromGroup(@PathParam("groupId") int groupId, @PathParam("schemaId") int schemaId) {
         logger.debugv("removeSchemaFromGroup {0} {1}", groupId, schemaId);
 
         boolean success = storageManager.removeSchemaFromGroup(groupId, schemaId);

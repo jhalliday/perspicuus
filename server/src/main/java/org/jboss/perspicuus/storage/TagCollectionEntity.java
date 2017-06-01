@@ -28,7 +28,7 @@ import java.util.Map;
 public class TagCollectionEntity {
 
     @Id
-    public Long id;
+    public Integer id;
 
     @ElementCollection(fetch = FetchType.EAGER)
     public Map<String,String> tags;

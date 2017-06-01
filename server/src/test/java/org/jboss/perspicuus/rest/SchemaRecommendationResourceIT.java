@@ -43,15 +43,17 @@ public class SchemaRecommendationResourceIT {
 
     private final Client client = ClientBuilder.newClient();
 
-    private long registerSchema(String subject, Map<String,Object> request) throws Exception {
+    private int registerSchema(String subject, Map<String,Object> request) throws Exception {
         String schemaString = objectMapper.writeValueAsString(request);
+
+        System.out.println("SCHEMA: "+schemaString);
 
         String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
         assertEquals(1, actualResultMap.size());
         assertTrue(actualResultMap.containsKey("id"));
         int id = (Integer)actualResultMap.get("id");
-        return(long)id;
+        return id;
     }
 
     private Map<String,Object> getTestSchema(String[] fieldnames) throws Exception {
@@ -68,29 +70,29 @@ public class SchemaRecommendationResourceIT {
     @Test
     public void testSearchForMatchingFieldname() throws Exception {
 
-        long firstId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldone", "fieldtwo"}));
-        long secondId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldthree", "fieldfour"}));
+        int firstId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldone", "fieldtwo"}));
+        int secondId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldthree", "fieldfour"}));
 
         String result = client.target(URL_BASE+"/schemas/matching/fieldthree").request(CONTENT_TYPE).get(String.class);
-        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+        List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
 
         assertEquals(1, ids.size());
-        assertEquals((Long)secondId, ids.get(0));
+        assertEquals((Integer)secondId, ids.get(0));
     }
 
     @Test
     public void testSearchForSimilarSchemas() throws Exception {
 
-        long firstId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
-        long secondId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
+        int firstId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
+        int secondId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
 
         String result = client.target(URL_BASE+"/schemas/similar/"+firstId).request(CONTENT_TYPE).get(String.class);
-        List<Long> ids = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+        List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
 
         // should match at least self and similar, plus maybe others - depending on order the tests run the index may not be empty when we start
         assertTrue( ids.size() >= 2);
 
-        assertEquals((Long)firstId, ids.get(0));
-        assertEquals((Long)secondId, ids.get(1));
+        assertEquals((Integer)firstId, ids.get(0));
+        assertEquals((Integer)secondId, ids.get(1));
     }
 }

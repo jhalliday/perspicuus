@@ -76,7 +76,7 @@ public class JdbcClientIT {
         String subject = "testjdbckey";
         jdbcClient.associate(subject, catalogName, tableName);
 
-        long id = schemaRegistryClient.getLatestVersion(subject);
+        int id = schemaRegistryClient.getLatestVersion(subject);
         Schema schemaFromServer = schemaRegistryClient.getSchema(id);
 
         assertEquals(expectedSchema, schemaFromServer);

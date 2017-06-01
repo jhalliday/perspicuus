@@ -44,7 +44,7 @@ public class SchemaRegistryResourceIT {
 
     private final Client client = ClientBuilder.newClient();
 
-    private long registerSchema(String subject, Map<String,Object> request) throws Exception {
+    private int registerSchema(String subject, Map<String,Object> request) throws Exception {
         String schemaString = objectMapper.writeValueAsString(request);
 
         String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
@@ -52,7 +52,7 @@ public class SchemaRegistryResourceIT {
         assertEquals(1, actualResultMap.size());
         assertTrue(actualResultMap.containsKey("id"));
         int id = (Integer)actualResultMap.get("id");
-        return(long)id;
+        return id;
     }
 
     private Map<String,Object> getTestSchema() throws Exception {
@@ -75,7 +75,7 @@ public class SchemaRegistryResourceIT {
 
         Map<String,Object> schema = getTestSchema();
 
-        long schemaId = registerSchema(subject, schema);
+        int schemaId = registerSchema(subject, schema);
 
         String result = client.target(URL_BASE+"/schemas/ids/"+schemaId).request(CONTENT_TYPE).get(String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
@@ -101,7 +101,7 @@ public class SchemaRegistryResourceIT {
             // expected
         }
 
-        long schemaId = registerSchema(subject, schema);
+        int schemaId = registerSchema(subject, schema);
 
         String result = client.target(URL_BASE + "/subjects/"+subject).request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
@@ -137,13 +137,13 @@ public class SchemaRegistryResourceIT {
             // expected
         }
 
-        long schemaId = registerSchema(subject, schema);
+        int schemaId = registerSchema(subject, schema);
 
         String result = client.target(URL_BASE + "/subjects/"+subject+"/versions").request(CONTENT_TYPE).get(String.class);
-        List<Long> versionList = objectMapper.readValue(result, new TypeReference<List<Long>>() {});
+        List<Integer> versionList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
 
         assertEquals(1, versionList.size());
-        assertEquals((Long)schemaId, versionList.get(0));
+        assertEquals((Integer)schemaId, versionList.get(0));
 
         result = client.target(URL_BASE + "/subjects/"+subject+"/versions/latest").request(CONTENT_TYPE).get(String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
@@ -168,7 +168,7 @@ public class SchemaRegistryResourceIT {
 
         Map<String,Object> schema = getTestSchema();
 
-        long schemaId = registerSchema(subject, schema);
+        int schemaId = registerSchema(subject, schema);
 
         String schemaString = objectMapper.writeValueAsString(schema);
 

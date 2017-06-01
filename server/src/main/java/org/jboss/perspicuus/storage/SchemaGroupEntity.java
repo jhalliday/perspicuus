@@ -27,9 +27,9 @@ public class SchemaGroupEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public Long id;
+    public Integer id;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @OrderColumn(name = "position")
-    public Set<Long> schemaIds;
+    public Set<Integer> schemaIds;
 }

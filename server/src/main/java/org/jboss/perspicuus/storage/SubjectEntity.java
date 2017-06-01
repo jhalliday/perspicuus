@@ -35,5 +35,5 @@ public class SubjectEntity {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @OrderColumn(name = "position")
-    public List<Long> schemaIds;
+    public List<Integer> schemaIds;
 }
