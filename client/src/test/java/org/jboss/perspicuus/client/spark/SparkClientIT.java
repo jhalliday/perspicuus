@@ -41,7 +41,7 @@ public class SparkClientIT {
         StructType definedSchema = DataTypes.createStructType(definedFields);
         //definedSchema.printTreeString();
 
-        MetadataClient metadataClient = new MetadataClient("http://localhost:8080");
+        MetadataClient metadataClient = new MetadataClient("http://localhost:8080", "testuser", "testpass");
         String key = "testKey";
 
         metadataClient.associate(key, definedSchema);

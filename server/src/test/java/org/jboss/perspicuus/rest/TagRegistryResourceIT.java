@@ -38,7 +38,7 @@ public class TagRegistryResourceIT {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Client client = ClientBuilder.newClient();
+    private final Client client = RestClient.client;
 
     @Test
     public void testCreateAndReadback() throws Exception {

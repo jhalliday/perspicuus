@@ -33,8 +33,8 @@ public class MetadataClient {
 
     private final SchemaRegistryClient schemaRegistryClient;
 
-    public MetadataClient(String url) throws IOException {
-        schemaRegistryClient = new SchemaRegistryClient(url);
+    public MetadataClient(String url, String username, String password) throws IOException {
+        schemaRegistryClient = new SchemaRegistryClient(url, username, password);
     }
 
     public StructType resolve(String key) throws IOException {

@@ -41,7 +41,7 @@ public class SchemaRecommendationResourceIT {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Client client = ClientBuilder.newClient();
+    private final Client client = RestClient.client;
 
     private int registerSchema(String subject, Map<String,Object> request) throws Exception {
         String schemaString = objectMapper.writeValueAsString(request);

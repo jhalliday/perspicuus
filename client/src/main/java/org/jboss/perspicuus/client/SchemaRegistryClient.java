@@ -41,8 +41,9 @@ public class SchemaRegistryClient {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public SchemaRegistryClient(String serverURL) {
+    public SchemaRegistryClient(String serverURL, String username, String password) {
         this.serverURL = serverURL;
+        client.register(new BasicAuthFilter(username, password));
     }
 
     /**

@@ -1,5 +1,29 @@
 
 swarm:
+
+  deployment:
+    server-0.1.0-SNAPSHOT.war:
+      web:
+        login-config:
+          auth-method: BASIC
+          security-domain: perspicuus
+        security-constraints:
+          - url-pattern: /*
+            methods: [GET, PUT, POST, DELETE]
+            roles: [catalog_user]
+
+  security:
+    security-domains:
+      perspicuus:
+        classic-authentication:
+          login-modules:
+            UsersRolesLoginModule:
+              code: org.jboss.security.auth.spi.UsersRolesLoginModule
+              flag: required
+              module-options:
+                usersProperties: users.properties
+                rolesProperties: roles.properties
+
   datasources:
     jdbc-drivers:
       com-mysql:
@@ -16,6 +40,7 @@ swarm:
         connection-url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
         user-name: sa
         password: sa
+
   logging:
     root-logger:
       level: INFO

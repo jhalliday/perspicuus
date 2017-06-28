@@ -38,7 +38,7 @@ public class SchemaGroupResourceIT {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Client client = ClientBuilder.newClient();
+    private final Client client = RestClient.client;
 
     private List<Integer> getMembers(int groupId) throws IOException {
         String result = client.target(URL_BASE+"/groups/"+groupId).request(CONTENT_TYPE).get(String.class);

@@ -21,6 +21,7 @@ import org.jboss.perspicuus.storage.StorageManager;
 import org.jboss.perspicuus.storage.SchemaEntity;
 import org.jboss.perspicuus.storage.SubjectEntity;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -97,6 +98,7 @@ public class SchemaRegistryResource {
     )
     @GET
     @Path("/schemas/ids/{id}")
+    @RolesAllowed("catalog_user")
     public TerseSchema getSchema(@PathParam("id") Integer id) {
         logger.debugv("getSchema {0}", id);
 
@@ -117,6 +119,7 @@ public class SchemaRegistryResource {
     )
     @POST
     @Path("/subjects/{subject}")
+    @RolesAllowed("catalog_user")
     public TerseSchema scopedSearch(@PathParam("subject") String subject, TerseSchema request) {
         logger.debugv("scopedSearch {0} {1}", subject, request.schema);
 
@@ -138,6 +141,7 @@ public class SchemaRegistryResource {
     @ApiOperation(value = "List all known subjects")
     @GET
     @Path("/subjects")
+    @RolesAllowed("catalog_user")
     public Set<String> listSubjectNames() {
         logger.debugv("listSubjectNames");
 
@@ -151,6 +155,7 @@ public class SchemaRegistryResource {
     )
     @GET
     @Path("/subjects/{subject}/versions")
+    @RolesAllowed("catalog_user")
     public List<Integer> listSubjectSchemaIds(@PathParam("subject") String subject) {
         logger.debugv("listSubjectSchemaIds {0}", subject);
 
@@ -170,6 +175,7 @@ public class SchemaRegistryResource {
     )
     @GET
     @Path("/subjects/{subject}/versions/{version}")
+    @RolesAllowed("catalog_user")
     public VerboseSchema getSchemaInScope(@PathParam("subject") String subject,
                                           @PathParam("version") String version) {
         logger.debugv("getSchemaInScope {0} {1}", subject, version);
@@ -222,6 +228,7 @@ public class SchemaRegistryResource {
     )
     @POST
     @Path("/subjects/{subject}/versions/{version}")
+    @RolesAllowed("catalog_user")
     public CompatibilityReport determineCompatibility(@PathParam("subject") String subject,
                                                       @PathParam("version") String version,
                                                       TerseSchema request) {
@@ -247,6 +254,7 @@ public class SchemaRegistryResource {
     @ApiOperation(value = "Register a new schema, adding it to the given topic")
     @POST
     @Path("/subjects/{subject}/versions")
+    @RolesAllowed("catalog_user")
     public RegisterResponse addSchema(@PathParam("subject") String subject, TerseSchema request) {
         logger.debugv("addSchema {0} {1}", subject, request);
 

@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  */
 public class SchemaRegistryClientIT {
 
-    private final SchemaRegistryClient schemaRegistryClient = new SchemaRegistryClient("http://localhost:8080");
+    private final SchemaRegistryClient schemaRegistryClient = new SchemaRegistryClient("http://localhost:8080", "testuser", "testpass");
 
     private Schema getTestSchema() throws Exception {
         Schema schema = getCustomTestSchema("recordname", new String[] {"fieldname"});

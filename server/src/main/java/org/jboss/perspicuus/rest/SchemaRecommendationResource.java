@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.util.List;
@@ -45,6 +46,7 @@ public class SchemaRecommendationResource {
     @ApiOperation(value = "Retrieve Ids of schemas matching the query term")
     @GET
     @Path("/schemas/matching/{searchTerm}")
+    @RolesAllowed("catalog_user")
     public List<Integer> findMatchingSchemaIds(@PathParam("searchTerm") String searchTerm) {
         logger.debugv("findMatchingSchemaIds {0}", searchTerm);
 
@@ -55,6 +57,7 @@ public class SchemaRecommendationResource {
     @ApiOperation(value = "Retrieve Ids of schemas having similarity to the given schema")
     @GET
     @Path("/schemas/similar/{searchTerm}")
+    @RolesAllowed("catalog_user")
     public List<Integer> findSimilarSchemaIds(@PathParam("searchTerm") Integer id) {
         logger.debugv("findSimilarSchemaIds {0}", id);
 

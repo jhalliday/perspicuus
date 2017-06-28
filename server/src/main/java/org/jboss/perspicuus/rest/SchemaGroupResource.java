@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiResponses;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.util.Set;
@@ -50,6 +51,7 @@ public class SchemaGroupResource {
     )
     @GET
     @Path("/groups/{groupId}")
+    @RolesAllowed("catalog_user")
     public Set<Integer> getSchemaGroupMembers(@PathParam("groupId") int groupId) {
         logger.debugv("getSchemaGroupMembers {0}", groupId);
 
@@ -64,6 +66,7 @@ public class SchemaGroupResource {
     @ApiOperation(value = "Create a new group")
     @POST
     @Path("/groups")
+    @RolesAllowed("catalog_user")
     public int registerGroup() {
         logger.debugv("registerGroup");
 
@@ -76,6 +79,7 @@ public class SchemaGroupResource {
     )
     @PUT
     @Path("/groups/{groupId}/{schemaId}")
+    @RolesAllowed("catalog_user")
     public void addSchemaToGroup(@PathParam("groupId") int groupId, @PathParam("schemaId") int schemaId) {
         logger.debugv("addSchemaToGroup {0} {1}", groupId, schemaId);
 
@@ -91,6 +95,7 @@ public class SchemaGroupResource {
     )
     @DELETE
     @Path("/groups/{groupId}/{schemaId}")
+    @RolesAllowed("catalog_user")
     public void removeSchemaFromGroup(@PathParam("groupId") int groupId, @PathParam("schemaId") int schemaId) {
         logger.debugv("removeSchemaFromGroup {0} {1}", groupId, schemaId);
 

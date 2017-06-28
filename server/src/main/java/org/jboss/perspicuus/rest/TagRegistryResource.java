@@ -17,6 +17,7 @@ import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 import org.jboss.perspicuus.storage.TagCollectionEntity;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ public class TagRegistryResource {
     )
     @GET
     @Path("/tags/{id}")
+    @RolesAllowed("catalog_user")
     public Map<String,String> getTags(@PathParam("id") Integer id) {
         logger.debugv("getTags {0}", id);
 
@@ -67,6 +69,7 @@ public class TagRegistryResource {
     )
     @GET
     @Path("/tags/{id}/{key}")
+    @RolesAllowed("catalog_user")
     public Map<String,String> getTag(@PathParam("id") Integer id, @PathParam("key") String key) {
         logger.debugv("getTag {0} {1}", id, key);
 
@@ -87,6 +90,7 @@ public class TagRegistryResource {
     @ApiOperation(value = "Modify (add/update) a tag within a collection")
     @POST
     @Path("/tags/{id}/{key}")
+    @RolesAllowed("catalog_user")
     public void updateTag(@PathParam("id") int id, @PathParam("key") String key,
                           @ApiParam(name = "content", value = "Tag Value", required = false) String request) {
         logger.debugv("updateTag {0} {1}", id, key);
@@ -97,6 +101,7 @@ public class TagRegistryResource {
     @ApiOperation(value = "Remove a tag from a collection")
     @DELETE
     @Path("/tags/{id}/{key}")
+    @RolesAllowed("catalog_user")
     public void removeTag(@PathParam("id") Integer id, @PathParam("key") String key) {
         logger.debugv("updateTag {0} {1}", id, key);
 
