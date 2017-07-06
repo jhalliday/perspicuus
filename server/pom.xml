@@ -31,6 +31,9 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- kubernetes || openshift.
+        openshift currently broken, per http://fabric8.io/guide/getStarted/minishift.html -->
+        <fabric8.mode>kubernetes</fabric8.mode>
     </properties>
 
     <dependencyManagement>
@@ -84,6 +87,23 @@
                     <bundleDependencies>true</bundleDependencies>
                     <!--<debug>5005</debug>-->
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <!-- https://maven.fabric8.io/ - Kubernetes/OpenShift packaging -->
+                <groupId>io.fabric8</groupId>
+                <artifactId>fabric8-maven-plugin</artifactId>
+                <version>3.4.2</version>
+                <executions>
+                    <execution>
+                        <id>fabric8</id>
+                        <goals>
+                            <goal>resource</goal>
+                            <goal>build</goal>
+                            <goal>helm</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- use bytecode enhancement to workaround proxy problems until the proper fix
