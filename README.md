@@ -76,3 +76,13 @@ http://cidrdb.org/cidr2017/papers/p111-hellerstein-cidr17.pdf Ground: A Data Con
 https://finraos.github.io/herd/
 
 https://github.com/yelp/schematizer
+
+https://github.com/hortonworks/registry
+
+https://www.cloudera.com/products/product-components/cloudera-navigator.html
+
+https://blog.twitter.com/engineering/en_us/topics/insights/2016/discovery-and-consumption-of-analytics-data-at-twitter.html Twitter DAL
+
+https://www.microsoft.com/en-us/research/wp-content/uploads/2016/10/Provenance-2016-TR.pdf Guider
+
+https://github.com/snowplow/iglu
