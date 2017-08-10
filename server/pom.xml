@@ -18,14 +18,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.jboss.perspicuus</groupId>
-    <artifactId>server</artifactId>
+    <artifactId>perspicuus-server</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
     <name>JBoss Perspicuus (Server)</name>
     <packaging>war</packaging>
 
     <properties>
-        <version.wildfly.swarm>2017.5.0</version.wildfly.swarm>
+        <version.wildfly.swarm>2017.8.1</version.wildfly.swarm>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -33,7 +33,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- kubernetes || openshift.
         openshift currently broken, per http://fabric8.io/guide/getStarted/minishift.html -->
-        <fabric8.mode>kubernetes</fabric8.mode>
+        <fabric8.mode>openshift</fabric8.mode>
     </properties>
 
     <dependencyManagement>
@@ -93,7 +93,7 @@
                 <!-- https://maven.fabric8.io/ - Kubernetes/OpenShift packaging -->
                 <groupId>io.fabric8</groupId>
                 <artifactId>fabric8-maven-plugin</artifactId>
-                <version>3.4.2</version>
+                <version>3.5.22</version>
                 <executions>
                     <execution>
                         <id>fabric8</id>

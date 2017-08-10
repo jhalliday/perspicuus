@@ -2,7 +2,7 @@
 swarm:
 
   deployment:
-    server-0.1.0-SNAPSHOT.war:
+    perspicuus-server-0.1.0-SNAPSHOT.war:
       web:
         login-config:
           auth-method: BASIC
