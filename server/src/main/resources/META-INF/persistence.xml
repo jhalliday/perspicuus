@@ -6,20 +6,7 @@
         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
     <persistence-unit name="perspicuus" transaction-type="RESOURCE_LOCAL">
 
-        <non-jta-data-source>jboss/datasources/DataSourceH2</non-jta-data-source>
-
-        <properties>
-
-            <property name="hibernate.show_sql" value="true" />
-            <property name="hibernate.hbm2ddl.auto" value="create" />
-
-            <!-- 'ram' for test, 'filesystem' for prod -->
-            <property name="hibernate.search.default.directory_provider"
-                      value="ram"/>
-            <property name="hibernate.search.default.indexBase"
-                      value="/tmp/lucene/indexes"/>
-
-        </properties>
+        <non-jta-data-source>jboss/datasources/DataSourcePerspicuus</non-jta-data-source>
 
     </persistence-unit>
 </persistence>

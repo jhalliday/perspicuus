@@ -37,6 +37,24 @@
     },
 
     {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "${APPLICATION_NAME}"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "${VOLUME_CAPACITY}"
+          }
+        }
+      }
+    },
+
+    {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
@@ -113,6 +131,16 @@
                   {
                     "name": "AB_OFF",
                     "value": "true"
+                  },
+                  {
+                    "name": "JAVA_OPTIONS",
+                    "value": "-Dswarm.http.port=${BIND_PORT} -Dswarm.datasources.data-sources.DataSourcePerspicuus.driver-name=${DB_DRIVER} -Dswarm.datasources.data-sources.DataSourcePerspicuus.connection-url=${DB_URL} -Dswarm.datasources.data-sources.DataSourcePerspicuus.user-name=${DB_USERNAME} -Dswarm.datasources.data-sources.DataSourcePerspicuus.password=${DB_PASSWORD} -Dhibernate.search.default.directory_provider=filesystem -Dhibernate.search.default.indexBase=/var/lib/lucene/indexes"
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "mountPath": "/var/lib/lucene",
+                    "name": "${APPLICATION_NAME}-lucene-data"
                   }
                 ],
                 "resources": {},
@@ -120,6 +148,14 @@
                 "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "privileged": false
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${APPLICATION_NAME}-lucene-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${APPLICATION_NAME}"
                 }
               }
             ],
@@ -138,6 +174,43 @@
       "name": "APPLICATION_NAME",
       "required": true,
       "value": "perspicuus-server"
+    },
+    {
+      "description": "The bind port",
+      "name": "BIND_PORT",
+      "required": true,
+      "value": "8081"
+    },
+    {
+      "description": "Database driver (org-h2 | com-mysql)",
+      "name": "DB_DRIVER",
+      "required": true,
+      "value": "org-h2"
+    },
+    {
+      "description": "Database connection URL",
+      "name": "DB_URL",
+      "required": true,
+      "value": "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
+    },
+    {
+      "description": "Database username",
+      "name": "DB_USERNAME",
+      "required": true,
+      "value": "sa"
+    },
+    {
+      "description": "Database password",
+      "name": "DB_PASSWORD",
+      "required": true,
+      "value": "sa"
+    },
+    {
+      "description": "Volume space available for search index, e.g. 512Mi, 1Gi.",
+      "displayName": "Volume Capacity",
+      "name": "VOLUME_CAPACITY",
+      "required": true,
+      "value": "500Mi"
     }
   ]
 }

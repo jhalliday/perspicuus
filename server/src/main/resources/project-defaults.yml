@@ -1,4 +1,16 @@
 
+hibernate:
+  show_sql: false
+  hbm2ddl:
+    auto: create
+
+  search:
+    default:
+      # 'ram' or 'filesystem'
+      directory_provider: ram
+      indexBase: /tmp/lucene/indexes
+
+
 swarm:
 
   deployment:
@@ -35,7 +47,7 @@ swarm:
         xa-datasource-name: org.h2.jdbcx.JdbcDataSource
         driver-module-name: com.h2database.h2
     data-sources:
-      DataSourceH2:
+      DataSourcePerspicuus:
         driver-name: org-h2
         connection-url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
         user-name: sa
@@ -47,4 +59,3 @@ swarm:
     console-handlers:
       CONSOLE:
         level: INFO
-
