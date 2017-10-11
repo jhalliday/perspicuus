@@ -31,7 +31,7 @@
         "selector": {
           "deploymentConfig": "${APPLICATION_NAME}"
         },
-        "type": "NodePort",
+        "type": "ClusterIP",
         "sessionAffinity": "None"
       }
     },
@@ -179,7 +179,7 @@
       "description": "The bind port",
       "name": "BIND_PORT",
       "required": true,
-      "value": "8081"
+      "value": "8080"
     },
     {
       "description": "Database driver (org-h2 | com-mysql)",

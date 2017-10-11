@@ -25,7 +25,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <version.wildfly.swarm>2017.8.1</version.wildfly.swarm>
+        <version.wildfly.swarm>2017.10.0</version.wildfly.swarm>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -89,23 +89,6 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <!-- https://maven.fabric8.io/ - Kubernetes/OpenShift packaging -->
-                <groupId>io.fabric8</groupId>
-                <artifactId>fabric8-maven-plugin</artifactId>
-                <version>3.5.22</version>
-                <executions>
-                    <execution>
-                        <id>fabric8</id>
-                        <goals>
-                            <goal>resource</goal>
-                            <goal>build</goal>
-                            <goal>helm</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- use bytecode enhancement to workaround proxy problems until the proper fix
                 makes it into wildfly  https://hibernate.atlassian.net/browse/HSEARCH-2541 -->
             <plugin>
@@ -146,6 +129,32 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>containerization</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- https://maven.fabric8.io/ - Kubernetes/OpenShift packaging -->
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>fabric8-maven-plugin</artifactId>
+                        <version>3.5.22</version>
+                        <executions>
+                            <execution>
+                                <id>fabric8</id>
+                                <goals>
+                                    <goal>resource</goal>
+                                    <goal>build</goal>
+                                    <goal>helm</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencies>
 
