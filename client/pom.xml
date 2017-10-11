@@ -139,12 +139,21 @@
             <artifactId>server</artifactId>
             <type>war</type>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.193</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- we get these for free on java8, but need them explicitly for java9 -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
             <scope>test</scope>
         </dependency>
 
