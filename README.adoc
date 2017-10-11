@@ -1,0 +1,183 @@
+[[perspicuus-a-metadata-catalog-system.]]
+= perspicuus, a metadata catalog system. =
+
+[[overview]]
+== Overview ==
+
+The system stores _Schemas_ (currently Avro, eventually polyglot).
+
+_Schemas_, which are immutable, are organized into _Subjects_, which are named sequences of _Schema_ versions, such as a single table or file format evolving over time.
+
+In addition to being part of a _Subject_, each _Schema_ can be placed in any number of _SchemaGroups_.
+These may be used for various organizational purposes, such as to collect all the _Schemas_ for a given database, project or user.
+
+Both _Schemas_ and _SchemaGroups_ may be annotated by any number of _Tags_, which are string key-value pairs.
+These provide a general mechanism for attaching additional information which is outside of the _Schema_'s native format, such as design or usage insights.
+
+[[usage-server]]
+== Usage: Server ==
+
+The server component exposes a REST/JSON API. The technology stack is
+wildfly-swarm (resteasy, hibernate, hibernate-search).
+
+....
+cd server
+mvn clean compile verify
+java -jar target/server-0.1.0-SNAPSHOT-swarm.jar
+....
+
+The server uses two forms of storage: a relational database for canonical state (via hibernate) and a filesystem for full-text indexes (lucene via hibernate-search).
+
+By default an in-memory H2 database is used. For production use, rewire the database via edits to pom.xml, project-stages.yml and persistence.xml in accordance with https://howto.wildfly-swarm.io/create-a-datasource/
+
+Alternatively, the database configuration for an existing binary build can be overridden by command line environment, e.g.
+
+....
+java -Dswarm.datasources.data-sources.DataSourcePerspicuus.driver-name=${DB_DRIVER} \
+     -Dswarm.datasources.data-sources.DataSourcePerspicuus.connection-url=${DB_URL} \
+     -Dswarm.datasources.data-sources.DataSourcePerspicuus.user-name=${DB_USERNAME} \
+     -Dswarm.datasources.data-sources.DataSourcePerspicuus.password=${DB_PASSWORD}
+....
+
+wildfly-swarm also supports overriding configuration parameters by specifying additional configuration files, see https://reference.wildfly-swarm.io/configuration.html for details.
+
+Note these post-build configuration mechanisms are limited to using database drivers which are part of the build (h2 and mysql). For other database types supported by hibernate, build with pom.xml changes to include the appropriate driver dependency.
+
+The server uses hibernate-search for full text indexing.
+Edit persistence.xml to use filesystem storage instead of RAM for this.
+Alternatively, the index storage configuration for an existing binary build can be overridden e.g.
+
+....
+java -Dhibernate.search.default.directory_provider=filesystem -Dhibernate.search.default.indexBase=/var/lib/lucene/indexes
+....
+
+Configuration for other aspects of the server e.g. logging and authentication, can likewise be changed at build time or by runtime overrides.
+
+[[usage-server-openshift]]
+== Usage: Server in OpenShift ==
+
+The server build system can construct container images for deployment to kubernetes or OpenShift.
+This is done via the fabric8 maven plugin, see https://maven.fabric8.io/ for details.
+
+Run maven with the 'containerization' profile enabled.
+By default this targets OpenShift, so you should have an appropriate oc login context active in the shell environment from which you invoke it.
+Change the 'fabric8.mode' property in pom.xml to target kubernetes instead.
+
+....
+oc login -u someone
+mvn -P containerization clean verify
+....
+
+fabric8 OpenShift integration will create a binary ImageStream for the server.
+The command 'mvn fabric8:deploy' will then deploy the application to the cluster.
+However, the default configuration that results may not be desirable, so build time configuration of the image may be required.
+
+The preferred way to deploy the built server image with flexible deployment time configuration is via the OpenShift Service Catalog (https://docs.openshift.org/latest/architecture/service_catalog/index.html) with a configuration template. (requires OC 3.6 or later with the service catalog enabled.)
+The fabric8 build tooling doesn't yet (as of fall 2017) support Service Catalog integration, so manual deployment of the template is necessary.
+Note that the image stream should also be in the 'openshift' namespace, so login and set the context appropriately before running the image build step above.
+
+....
+oc create -f openshift_template.json -n openshift
+....
+
+
+[[usage-client-cmdline]]
+== Usage: REST API Client ==
+
+Clients may use the REST API directly. For functionality that overlaps the Confluent Schema Registry, the API is compatible.
+Therefore most of the examples curl at https://github.com/confluentinc/schema-registry will work against the perspicuus server.
+
+Note that, by default, authentication is required. For server builds that don't override the authentication settings, clients can use 'curl --user testuser:testpass' when invoking the API.
+
+[[usage-client-java]]
+== Usage: Java client library ==
+There is a Java wrapper library for the API, provided in the 'client' module.
+
+Building the client with integration tests enabled (which they are by default) requires that a local server be running. A bug in the wildfly-swarm tooling prevents this happening automatically, so start a server manually before building the client.
+....
+cd server; java -jar target/server-0.1.0-SNAPSHOT-swarm.jar
+cd client; mvn clean install
+....
+
+The client binary can be consumed via maven dependency:
+....
+    <dependency>
+        <groupId>org.jboss.perspicuus</groupId>
+        <artifactId>client</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+....
+
+Java client usage example:
+
+....
+import org.jboss.perspicuus.client.*;
+...
+SchemaRegistryClient schemaRegistryClient = new SchemaRegistryClient("http://localhost:8080", "username", "password");
+Schema schema = ...
+long schemaId = schemaRegistryClient.registerSchema(schema.getName(), schema.toString());
+schemaRegistryClient.annotate(schemaId,"key", "value");
+long groupId = schemaRegistryClient.createGroup();
+schemaRegistryClient.addSchemaToGroup(groupId, schemaId);
+schemaRegistryClient.annotate(groupId, "key", "value");
+....
+
+The Java client additionally provides adaptors for working with schema from two sources: Spark and JDBC.
+
+[[usage-client-openapi]]
+== Usage: auto-generate clients for other languages ==
+The REST API of the server is self-describing via OpenAPI (https://www.openapis.org/).
+Using this machine readable description of the API, tooling can generate client libraries for a number of languages, see e.g. https://swagger.io/swagger-codegen/ for details.
+
+The swagger-ui project provides an automatically generated web based interface for exploring and experimenting with the API.
+To use it, download and run the pre-built willdfly-server:
+
+....
+curl "https://repo1.maven.org/maven2/org/wildfly/swarm/servers/swagger-ui/2017.10.0/swagger-ui-2017.10.0-swarm.jar"
+java -Dswarm.port.offset=1 -jar swagger-ui-2017.10.0-swarm.jar
+....
+Note the port offset is necessary where the perspicuus server is already running locally, as it will use port 8080, obliging the swagger-ui server to move up to port 8081.
+Access http://localhost:8081/swagger-ui/ in a browser and use http://localhost:8080/swagger.json to reference the perspicuus API description.
+TODO make the server play nice with api_key auth, as the UI browser won't do username/password
+
+[[related-reading-and-projects]]
+== Related reading and similar projects: ==
+
+http://atlas.apache.org/
+
+https://github.com/confluentinc/schema-registry
+
+http://docs.spring.io/spring-cloud-stream/docs/Brooklyn.M1/reference/htmlsingle/#_schema_registry_server
+
+https://aws.amazon.com/glue/
+
+https://github.com/airbnb/knowledge-repo
+
+https://github.com/Netflix/metacat
+
+https://github.com/linkedin/WhereHows
+
+http://cidrdb.org/cidr2017/papers/p44-deng-cidr17.pdf The Data Civilizer
+System
+
+http://dl.acm.org/citation.cfm?id=2903730 Goods: Organizing Google's
+Datasets
+
+http://cidrdb.org/cidr2017/papers/p111-hellerstein-cidr17.pdf Ground: A
+Data Context Service
+
+https://finraos.github.io/herd/
+
+https://github.com/yelp/schematizer
+
+https://github.com/hortonworks/registry
+
+https://www.cloudera.com/products/product-components/cloudera-navigator.html
+
+https://blog.twitter.com/engineering/en_us/topics/insights/2016/discovery-and-consumption-of-analytics-data-at-twitter.html
+Twitter DAL
+
+https://www.microsoft.com/en-us/research/wp-content/uploads/2016/10/Provenance-2016-TR.pdf
+Guider
+
+https://github.com/snowplow/iglu
