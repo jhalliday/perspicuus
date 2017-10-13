@@ -14,6 +14,7 @@ package org.jboss.perspicuus.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 
@@ -28,7 +29,7 @@ import java.util.List;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
-@Api(value = "recommendations")
+@Api(value = "recommendations", authorizations = { @Authorization(value = "basicAuth") })
 @Path("/")
 @Produces({"application/vnd.schemaregistry.v1+json",
         "application/vnd.schemaregistry+json; qs=0.9",

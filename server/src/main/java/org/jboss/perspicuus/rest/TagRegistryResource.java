@@ -29,7 +29,7 @@ import java.util.Map;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
-@Api(value = "tags")
+@Api(value = "tags", authorizations = { @Authorization(value = "basicAuth") })
 @Path("/")
 @Produces({"application/vnd.schemaregistry.v1+json",
         "application/vnd.schemaregistry+json; qs=0.9",

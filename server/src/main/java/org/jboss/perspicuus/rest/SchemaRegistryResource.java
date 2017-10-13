@@ -12,10 +12,7 @@
  */
 package org.jboss.perspicuus.rest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
 import org.jboss.perspicuus.storage.SchemaEntity;
@@ -36,7 +33,10 @@ import java.util.Set;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
-@Api(value = "registry")
+@SwaggerDefinition(
+        securityDefinition = @SecurityDefinition(basicAuthDefinitions = {@BasicAuthDefinition(key="basicAuth")})
+)
+@Api(value = "registry", authorizations = { @Authorization(value = "basicAuth") })
 @Path("/")
 @Produces({"application/vnd.schemaregistry.v1+json",
         "application/vnd.schemaregistry+json; qs=0.9",
