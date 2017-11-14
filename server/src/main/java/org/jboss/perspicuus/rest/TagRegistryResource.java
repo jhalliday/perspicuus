@@ -39,7 +39,7 @@ import java.util.Map;
         "application/json", "application/octet-stream"})
 public class TagRegistryResource {
 
-    private static final Logger logger = Logger.getLogger(SchemaRegistryResource.class);
+    private static final Logger logger = Logger.getLogger(TagRegistryResource.class);
 
     @Inject
     StorageManager storageManager;
@@ -93,7 +93,13 @@ public class TagRegistryResource {
     @RolesAllowed("catalog_user")
     public void updateTag(@PathParam("id") int id, @PathParam("key") String key,
                           @ApiParam(name = "content", value = "Tag Value", required = false) String request) {
-        logger.debugv("updateTag {0} {1}", id, key);
+        logger.debugv("updateTag {0} {1} {2}", id, key, request);
+
+        // unwrap JSON string to java string if necessary.
+        // https://issues.jboss.org/browse/RESTEASY-1740
+        if(request != null && request.startsWith("\"") && request.endsWith("\"")) {
+            request = request.substring(1, request.length()-1);
+        }
 
         storageManager.updateTag(id, key, request);
     }

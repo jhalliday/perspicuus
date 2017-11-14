@@ -46,6 +46,7 @@ public class SchemaEntity {
 
     @Column(nullable = false)
     @Field(name="content", store = Store.YES, bridge = @FieldBridge(impl = AvroSchemaStringBridge.class))
+    @Lob
     public String content;
 
     public SchemaEntity() {}
