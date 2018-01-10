@@ -22,6 +22,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -149,7 +150,7 @@ public class SchemaRegistryResource {
         return new HashSet<>(resultList);
     }
 
-    @ApiOperation(value = "List all schema ids for the given subject")
+    @ApiOperation(value = "List all (non-deleted) versions for the given subject")
     @ApiResponses(
             @ApiResponse(code = 404, message = "Not Found")
     )
@@ -165,7 +166,43 @@ public class SchemaRegistryResource {
             throw new CustomNotFoundException();
         }
 
-        return subjectEntity.schemaIds;
+        List<Integer> schemaIds = subjectEntity.schemaIds;
+        ArrayList<Integer> versions = new ArrayList<>(schemaIds.size());
+        for(int i = 0; i < schemaIds.size(); i++) {
+            if(schemaIds.get(i) != 0) {
+                // versions number from one, arrays from 0, so remember to offset...
+                versions.add(i+1);
+            }
+        }
+
+        return versions;
+    }
+
+    private VersionResolution resolveVersion(String version, SubjectEntity subjectEntity) {
+        int schemaId = 0;
+        int resolvedVersion = 0;
+        if("latest".equalsIgnoreCase(version)) {
+            resolvedVersion = subjectEntity.schemaIds.size();
+            schemaId = subjectEntity.schemaIds.get(resolvedVersion-1);
+        } else {
+            resolvedVersion = Integer.parseInt(version);
+            if(subjectEntity.schemaIds.size() >= resolvedVersion) {
+                // versions number from one, arrays from 0, so remember to offset...
+                schemaId = subjectEntity.schemaIds.get(resolvedVersion-1);
+            }
+        }
+
+        return new VersionResolution(schemaId, resolvedVersion);
+    }
+
+    public static class VersionResolution {
+        public final int schemaId;
+        public final int version;
+
+        public VersionResolution(int schemaId, int version) {
+            this.schemaId = schemaId;
+            this.version = version;
+        }
     }
 
     // 'latest' is a valid version, otherwise number 1-N
@@ -186,20 +223,9 @@ public class SchemaRegistryResource {
             throw new CustomNotFoundException();
         }
 
-        int schemaId = 0;
-        int resolvedVersion = 0;
-        if("latest".equalsIgnoreCase(version)) {
-            resolvedVersion = subjectEntity.schemaIds.size();
-            schemaId = subjectEntity.schemaIds.get(resolvedVersion-1);
-        } else {
-            resolvedVersion = Integer.parseInt(version);
-            if(subjectEntity.schemaIds.size() >= resolvedVersion) {
-                // versions number from one, arrays from 0, so remember to offset...
-                schemaId = subjectEntity.schemaIds.get(resolvedVersion-1);
-            }
-        }
+        VersionResolution versionResolution = resolveVersion(version, subjectEntity);
 
-        SchemaEntity schemaEntity = storageManager.findSchema(schemaId);
+        SchemaEntity schemaEntity = storageManager.findSchema(versionResolution.schemaId);
 
         if(schemaEntity == null) {
             throw new CustomNotFoundException();
@@ -209,9 +235,66 @@ public class SchemaRegistryResource {
         verboseSchema.schema = schemaEntity.content;
         verboseSchema.id = schemaEntity.id;
         verboseSchema.subject = subject;
-        verboseSchema.version = resolvedVersion;
+        verboseSchema.version = versionResolution.version;
         return verboseSchema;
 
+    }
+
+    @ApiOperation(value = "Delete a specific schema version from the subject")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
+    @DELETE
+    @Path("/subjects/{subject}/versions/{version}")
+    @RolesAllowed("catalog_user")
+    public int deleteSchemaInScope(@PathParam("subject") String subject,
+                                   @PathParam("version") String version) {
+        logger.debugv("deleteSchemaInScope {0} {1}", subject, version);
+
+        SubjectEntity subjectEntity = storageManager.findSubject(subject);
+
+        if(subjectEntity == null) {
+            throw new CustomNotFoundException();
+        }
+
+        VersionResolution versionResolution = resolveVersion(version, subjectEntity);
+        int index = versionResolution.version-1;
+        if(subjectEntity.schemaIds.get(index) == 0) {
+            throw new CustomNotFoundException();
+        } else {
+            storageManager.deleteSchemaAtIndex(subjectEntity, index);
+            return versionResolution.version;
+        }
+    }
+
+    @ApiOperation(value = "Delete a subject")
+    @ApiResponses(
+            @ApiResponse(code = 404, message = "Not Found")
+    )
+    @DELETE
+    @Path("/subjects/{subject}")
+    @RolesAllowed("catalog_user")
+    public List<Integer> deleteSubject(@PathParam("subject") String subject) {
+        logger.debugv("deleteSubject {0}", subject);
+
+        SubjectEntity subjectEntity = storageManager.findSubject(subject);
+
+        if(subjectEntity == null) {
+            throw new CustomNotFoundException();
+        }
+
+        List<Integer> schemaIds = subjectEntity.schemaIds;
+        ArrayList<Integer> versions = new ArrayList<>(schemaIds.size());
+        for(int i = 0; i < schemaIds.size(); i++) {
+            if(schemaIds.get(i) != 0) {
+                // versions number from one, arrays from 0, so remember to offset...
+                versions.add(i+1);
+            }
+        }
+
+        storageManager.deleteSubject(subjectEntity);
+
+        return versions;
     }
 
     public static class CompatibilityReport {

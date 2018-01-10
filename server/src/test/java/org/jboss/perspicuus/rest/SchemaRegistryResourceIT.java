@@ -20,10 +20,8 @@ import org.junit.Test;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,13 +53,6 @@ public class SchemaRegistryResourceIT {
         return id;
     }
 
-    private Map<String,Object> getTestSchema() throws Exception {
-        Map<String,Object> schemaOuterMap = new HashMap<>();
-        Schema schema = SchemaBuilder.record("recordname").fields().name("fieldname").type().stringType().noDefault().endRecord();
-        schemaOuterMap.put("schema", schema.toString());
-        return schemaOuterMap;
-    }
-
     @Test
     public void testRegisterAndReadback() throws Exception {
 
@@ -73,7 +64,7 @@ public class SchemaRegistryResourceIT {
             // expected
         }
 
-        Map<String,Object> schema = getTestSchema();
+        Map<String,Object> schema = SchemaHelper.getSchema();
 
         int schemaId = registerSchema(subject, schema);
 
@@ -91,7 +82,7 @@ public class SchemaRegistryResourceIT {
     public void testSearch() throws Exception {
 
         String subject = "searchsubject";
-        Map<String,Object> schema = getTestSchema();
+        Map<String,Object> schema = SchemaHelper.getSchema();
         String schemaString = objectMapper.writeValueAsString(schema);
 
         try {
@@ -113,7 +104,7 @@ public class SchemaRegistryResourceIT {
     public void testSubjectVersions() throws Exception {
 
         String subject = "versionsubject";
-        Map<String,Object> schema = getTestSchema();
+        Map<String,Object> schema = SchemaHelper.getSchema();
         String schemaString = objectMapper.writeValueAsString(schema);
 
         try {
@@ -148,7 +139,7 @@ public class SchemaRegistryResourceIT {
         result = client.target(URL_BASE + "/subjects/"+subject+"/versions/latest").request(CONTENT_TYPE).get(String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
 
-        Map<String,Object> expectedResult = getTestSchema();
+        Map<String,Object> expectedResult = SchemaHelper.getSchema();
         expectedResult.put("id", (int)schemaId);
         expectedResult.put("version", 1);
         expectedResult.put("subject", subject);
@@ -162,11 +153,50 @@ public class SchemaRegistryResourceIT {
     }
 
     @Test
+    public void testDeletions() throws Exception {
+
+        String subject = "deletionsubject";
+
+        int firstId = registerSchema(subject, SchemaHelper.getSchema(new String[] {"fieldA"}));
+        int secondId = registerSchema(subject, SchemaHelper.getSchema(new String[] {"fieldA", "fieldB"}));
+        int thirdId = registerSchema(subject, SchemaHelper.getSchema(new String[] {"fieldA", "fieldB", "fieldC"}));
+
+        String result = client.target(URL_BASE + "/subjects/"+subject+"/versions").request(CONTENT_TYPE).get(String.class);
+        List<Integer> versionList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
+        assertEquals(3, versionList.size());
+        assertEquals(1, (int)versionList.get(0));
+        assertEquals(2, (int)versionList.get(1));
+        assertEquals(3, (int)versionList.get(2));
+
+        result = client.target(URL_BASE+"/subjects/"+subject+"/versions/2").request(CONTENT_TYPE).delete(String.class);
+        assertEquals("2", result);
+
+        result = client.target(URL_BASE + "/subjects/"+subject+"/versions").request(CONTENT_TYPE).get(String.class);
+        versionList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
+        assertEquals(2, versionList.size());
+        assertEquals(1, (int)versionList.get(0));
+        assertEquals(3, (int)versionList.get(1));
+
+        result = client.target(URL_BASE+"/subjects/"+subject).request(CONTENT_TYPE).delete(String.class);
+        versionList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
+        assertEquals(2, versionList.size());
+        assertEquals(1, (int)versionList.get(0));
+        assertEquals(3, (int)versionList.get(1));
+
+        try {
+            client.target(URL_BASE + "/subjects/"+subject+"/versions").request(CONTENT_TYPE).get(String.class);
+            fail("Should throw NotFound");
+        } catch (NotFoundException e) {
+            // expected
+        }
+    }
+
+    @Test
     public void testCompatibility() throws Exception {
 
         String subject = "compatibilitysubject";
 
-        Map<String,Object> schema = getTestSchema();
+        Map<String,Object> schema = SchemaHelper.getSchema();
 
         int schemaId = registerSchema(subject, schema);
 

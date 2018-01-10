@@ -14,14 +14,10 @@ package org.jboss.perspicuus.rest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.avro.Schema;
-import org.apache.avro.SchemaBuilder;
 import org.junit.Test;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +42,6 @@ public class SchemaRecommendationResourceIT {
     private int registerSchema(String subject, Map<String,Object> request) throws Exception {
         String schemaString = objectMapper.writeValueAsString(request);
 
-        System.out.println("SCHEMA: "+schemaString);
-
         String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
         assertEquals(1, actualResultMap.size());
@@ -56,22 +50,11 @@ public class SchemaRecommendationResourceIT {
         return id;
     }
 
-    private Map<String,Object> getTestSchema(String[] fieldnames) throws Exception {
-        Map<String,Object> schemaOuterMap = new HashMap<>();
-        SchemaBuilder.FieldAssembler<Schema> fieldAssembler = SchemaBuilder.record("recordname").fields();
-        for(String fieldname : fieldnames) {
-            fieldAssembler.name(fieldname).type().stringType().noDefault();
-        }
-        Schema schema = fieldAssembler.endRecord();
-        schemaOuterMap.put("schema", schema.toString());
-        return schemaOuterMap;
-    }
-
     @Test
     public void testSearchForMatchingFieldname() throws Exception {
 
-        int firstId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldone", "fieldtwo"}));
-        int secondId = registerSchema("matchingSubject", getTestSchema(new String[] { "fieldthree", "fieldfour"}));
+        int firstId = registerSchema("matchingSubject", SchemaHelper.getSchema(new String[] { "fieldone", "fieldtwo"}));
+        int secondId = registerSchema("matchingSubject", SchemaHelper.getSchema(new String[] { "fieldthree", "fieldfour"}));
 
         String result = client.target(URL_BASE+"/schemas/matching/fieldthree").request(CONTENT_TYPE).get(String.class);
         List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
@@ -83,8 +66,8 @@ public class SchemaRecommendationResourceIT {
     @Test
     public void testSearchForSimilarSchemas() throws Exception {
 
-        int firstId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
-        int secondId = registerSchema("similarSubject", getTestSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
+        int firstId = registerSchema("similarSubject", SchemaHelper.getSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
+        int secondId = registerSchema("similarSubject", SchemaHelper.getSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
 
         String result = client.target(URL_BASE+"/schemas/similar/"+firstId).request(CONTENT_TYPE).get(String.class);
         List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});

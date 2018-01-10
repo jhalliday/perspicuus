@@ -130,14 +130,39 @@ public class StorageManager {
             subjectEntity.name = subject;
             subjectEntity.schemaIds = new ArrayList<>();
         }
-        subjectEntity.schemaIds.add(schemaId);
 
-        entityManager.persist(subjectEntity);
+        boolean found = false;
+        for(int id : subjectEntity.schemaIds) {
+            if(id == schemaId) {
+                found = true;
+                break;
+            }
+        }
 
-        entityManager.getTransaction().commit();
-        entityManager.getTransaction().begin();
+        if(!found) {
+            subjectEntity.schemaIds.add(schemaId);
+            entityManager.persist(subjectEntity);
+            entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
+        }
 
         return schemaId;
+    }
+
+    public void deleteSchemaAtIndex(SubjectEntity subjectEntity, int index) {
+        EntityManager entityManager = threadEntityManager.get();
+        if(subjectEntity.schemaIds.get(index) != 0) {
+            subjectEntity.schemaIds.set(index, 0);
+            entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
+        }
+    }
+
+    public void deleteSubject(SubjectEntity subjectEntity) {
+        EntityManager entityManager = threadEntityManager.get();
+        entityManager.remove(subjectEntity);
+        entityManager.getTransaction().commit();
+        entityManager.getTransaction().begin();
     }
 
     public TagCollectionEntity getTags(int id) {
