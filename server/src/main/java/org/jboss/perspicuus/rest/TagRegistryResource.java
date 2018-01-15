@@ -60,7 +60,7 @@ public class TagRegistryResource {
             throw new NotFoundException();
         }
 
-        return tagCollectionEntity.tags;
+        return tagCollectionEntity.getTags();
     }
 
     @ApiOperation(value = "Retrieve a single tag from a collection")

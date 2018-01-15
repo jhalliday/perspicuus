@@ -110,7 +110,7 @@ public class SchemaRegistryResource {
         }
 
         TerseSchema terseSchema = new TerseSchema();
-        terseSchema.schema = schemaEntity.content;
+        terseSchema.schema = schemaEntity.getContent();
         return terseSchema;
     }
 
@@ -132,8 +132,8 @@ public class SchemaRegistryResource {
         }
 
         TerseSchema terseSchema = new TerseSchema();
-        if(subjectEntity.schemaIds.contains(schemaEntity.id)) {
-            terseSchema.schema = schemaEntity.content;
+        if(subjectEntity.getSchemaIds().contains(schemaEntity.getId())) {
+            terseSchema.schema = schemaEntity.getContent();
         }
 
         return terseSchema;
@@ -166,7 +166,7 @@ public class SchemaRegistryResource {
             throw new CustomNotFoundException();
         }
 
-        List<Integer> schemaIds = subjectEntity.schemaIds;
+        List<Integer> schemaIds = subjectEntity.getSchemaIds();
         ArrayList<Integer> versions = new ArrayList<>(schemaIds.size());
         for(int i = 0; i < schemaIds.size(); i++) {
             if(schemaIds.get(i) != 0) {
@@ -182,13 +182,13 @@ public class SchemaRegistryResource {
         int schemaId = 0;
         int resolvedVersion = 0;
         if("latest".equalsIgnoreCase(version)) {
-            resolvedVersion = subjectEntity.schemaIds.size();
-            schemaId = subjectEntity.schemaIds.get(resolvedVersion-1);
+            resolvedVersion = subjectEntity.getSchemaIds().size();
+            schemaId = subjectEntity.getSchemaIds().get(resolvedVersion-1);
         } else {
             resolvedVersion = Integer.parseInt(version);
-            if(subjectEntity.schemaIds.size() >= resolvedVersion) {
+            if(subjectEntity.getSchemaIds().size() >= resolvedVersion) {
                 // versions number from one, arrays from 0, so remember to offset...
-                schemaId = subjectEntity.schemaIds.get(resolvedVersion-1);
+                schemaId = subjectEntity.getSchemaIds().get(resolvedVersion-1);
             }
         }
 
@@ -232,8 +232,8 @@ public class SchemaRegistryResource {
         }
 
         VerboseSchema verboseSchema = new VerboseSchema();
-        verboseSchema.schema = schemaEntity.content;
-        verboseSchema.id = schemaEntity.id;
+        verboseSchema.schema = schemaEntity.getContent();
+        verboseSchema.id = schemaEntity.getId();
         verboseSchema.subject = subject;
         verboseSchema.version = versionResolution.version;
         return verboseSchema;
@@ -259,7 +259,7 @@ public class SchemaRegistryResource {
 
         VersionResolution versionResolution = resolveVersion(version, subjectEntity);
         int index = versionResolution.version-1;
-        if(subjectEntity.schemaIds.get(index) == 0) {
+        if(subjectEntity.getSchemaIds().get(index) == 0) {
             throw new CustomNotFoundException();
         } else {
             storageManager.deleteSchemaAtIndex(subjectEntity, index);
@@ -283,7 +283,7 @@ public class SchemaRegistryResource {
             throw new CustomNotFoundException();
         }
 
-        List<Integer> schemaIds = subjectEntity.schemaIds;
+        List<Integer> schemaIds = subjectEntity.getSchemaIds();
         ArrayList<Integer> versions = new ArrayList<>(schemaIds.size());
         for(int i = 0; i < schemaIds.size(); i++) {
             if(schemaIds.get(i) != 0) {
@@ -295,35 +295,6 @@ public class SchemaRegistryResource {
         storageManager.deleteSubject(subjectEntity);
 
         return versions;
-    }
-
-    public static class CompatibilityReport {
-        public final boolean is_compatible;
-
-        public CompatibilityReport(boolean isCompatible) {
-            is_compatible = isCompatible;
-        }
-    }
-
-    @ApiOperation(value = "Test compatibility of the provided schema against an existing one from the repository")
-    @ApiResponses(
-            @ApiResponse(code = 404, message = "Not Found")
-    )
-    @POST
-    @Path("/subjects/{subject}/versions/{version}")
-    @RolesAllowed("catalog_user")
-    public CompatibilityReport determineCompatibility(@PathParam("subject") String subject,
-                                                      @PathParam("version") String version,
-                                                      TerseSchema request) {
-        logger.debugv("determineCompatibility({0} {1} {2})", subject, version, request.schema);
-
-        VerboseSchema verboseSchema = getSchemaInScope(subject, version);
-
-        boolean isCompatible = SchemaEntity.isCompatibleWith(verboseSchema.schema, request.schema);
-
-        CompatibilityReport compatibilityReport = new CompatibilityReport(isCompatible);
-
-        return compatibilityReport;
     }
 
     public static class RegisterResponse {

@@ -27,9 +27,25 @@ import java.util.Map;
 @Entity
 public class TagCollectionEntity {
 
+    private Integer id;
+
+    private Map<String,String> tags;
+
     @Id
-    public Integer id;
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     @ElementCollection(fetch = FetchType.EAGER)
-    public Map<String,String> tags;
+    public Map<String, String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
+    }
 }

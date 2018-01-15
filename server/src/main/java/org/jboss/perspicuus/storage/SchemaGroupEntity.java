@@ -25,11 +25,27 @@ import java.util.Set;
 @Entity
 public class SchemaGroupEntity {
 
+    private Integer id;
+
+    private Set<Integer> schemaIds;
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public Integer id;
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     @ElementCollection(fetch = FetchType.EAGER)
     @OrderColumn(name = "position")
-    public Set<Integer> schemaIds;
+    public Set<Integer> getSchemaIds() {
+        return schemaIds;
+    }
+
+    public void setSchemaIds(Set<Integer> schemaIds) {
+        this.schemaIds = schemaIds;
+    }
 }

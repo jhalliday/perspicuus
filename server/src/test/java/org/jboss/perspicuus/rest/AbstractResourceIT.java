@@ -12,13 +12,44 @@
  */
 package org.jboss.perspicuus.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SchemaHelper {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Base class with utility code for REST API test cases.
+ *
+ * @since 2018-01
+ * @author Jonathan Halliday (jonathan.halliday@redhat.com)
+ */
+public abstract class AbstractResourceIT {
+
+    protected final String URL_BASE = "http://localhost:8080";
+    protected final String CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
+
+    protected final ObjectMapper objectMapper = new ObjectMapper();
+
+    protected final Client client = RestClient.client;
+
+    protected int registerSchema(String subject, Map<String,Object> request) throws Exception {
+        String schemaString = objectMapper.writeValueAsString(request);
+
+        String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
+        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+        assertEquals(1, actualResultMap.size());
+        assertTrue(actualResultMap.containsKey("id"));
+        int id = (Integer)actualResultMap.get("id");
+        return id;
+    }
 
     public static Map<String,Object> getSchema() {
         return getSchema(new String[0]);

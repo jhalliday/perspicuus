@@ -13,10 +13,8 @@
 package org.jboss.perspicuus.rest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import java.io.IOException;
 import java.util.List;
@@ -30,14 +28,7 @@ import static org.junit.Assert.assertTrue;
  * @since 2017-03
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
-public class SchemaGroupResourceIT {
-
-    private final String URL_BASE = "http://localhost:8080";
-    private final String CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private final Client client = RestClient.client;
+public class SchemaGroupResourceIT extends AbstractResourceIT {
 
     private List<Integer> getMembers(int groupId) throws IOException {
         String result = client.target(URL_BASE+"/groups/"+groupId).request(CONTENT_TYPE).get(String.class);

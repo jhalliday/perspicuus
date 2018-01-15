@@ -25,7 +25,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <version.wildfly.swarm>2017.10.0</version.wildfly.swarm>
+        <version.wildfly.swarm>2017.12.1</version.wildfly.swarm>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -87,30 +87,6 @@
                     <bundleDependencies>true</bundleDependencies>
                     <!--<debug>5005</debug>-->
                 </configuration>
-            </plugin>
-
-            <!-- use bytecode enhancement to workaround proxy problems until the proper fix
-                makes it into wildfly  https://hibernate.atlassian.net/browse/HSEARCH-2541 -->
-            <plugin>
-                <groupId>org.hibernate.orm.tooling</groupId>
-                <artifactId>hibernate-enhance-maven-plugin</artifactId>
-                <version>5.2.8.Final</version>
-                <executions>
-                    <execution>
-                        <phase>process-classes</phase>
-                        <configuration>
-                            <base>${project.build.outputDirectory}</base>
-                            <dir>${project.build.outputDirectory}</dir>
-                            <failOnError>true</failOnError>
-                            <enableLazyInitialization>true</enableLazyInitialization>
-                            <enableDirtyTracking>true</enableDirtyTracking>
-                            <enableAssociationManagement>true</enableAssociationManagement>
-                        </configuration>
-                        <goals>
-                            <goal>enhance</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -187,10 +163,6 @@
         <dependency>
             <groupId>org.wildfly.swarm</groupId>
             <artifactId>jaxrs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.swarm</groupId>
-            <artifactId>jaxrs-cdi</artifactId>
         </dependency>
         <!-- https://issues.jboss.org/browse/SWARM-1259 -->
         <dependency>

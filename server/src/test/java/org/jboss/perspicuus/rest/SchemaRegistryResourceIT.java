@@ -33,25 +33,7 @@ import static org.junit.Assert.*;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
-public class SchemaRegistryResourceIT {
-
-    private final String URL_BASE = "http://localhost:8080";
-    private final String CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private final Client client = RestClient.client;
-
-    private int registerSchema(String subject, Map<String,Object> request) throws Exception {
-        String schemaString = objectMapper.writeValueAsString(request);
-
-        String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
-        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
-        assertEquals(1, actualResultMap.size());
-        assertTrue(actualResultMap.containsKey("id"));
-        int id = (Integer)actualResultMap.get("id");
-        return id;
-    }
+public class SchemaRegistryResourceIT extends AbstractResourceIT {
 
     @Test
     public void testRegisterAndReadback() throws Exception {
@@ -64,7 +46,7 @@ public class SchemaRegistryResourceIT {
             // expected
         }
 
-        Map<String,Object> schema = SchemaHelper.getSchema();
+        Map<String,Object> schema = getSchema();
 
         int schemaId = registerSchema(subject, schema);
 
@@ -82,7 +64,7 @@ public class SchemaRegistryResourceIT {
     public void testSearch() throws Exception {
 
         String subject = "searchsubject";
-        Map<String,Object> schema = SchemaHelper.getSchema();
+        Map<String,Object> schema = getSchema();
         String schemaString = objectMapper.writeValueAsString(schema);
 
         try {
@@ -104,7 +86,7 @@ public class SchemaRegistryResourceIT {
     public void testSubjectVersions() throws Exception {
 
         String subject = "versionsubject";
-        Map<String,Object> schema = SchemaHelper.getSchema();
+        Map<String,Object> schema = getSchema();
         String schemaString = objectMapper.writeValueAsString(schema);
 
         try {
@@ -139,7 +121,7 @@ public class SchemaRegistryResourceIT {
         result = client.target(URL_BASE + "/subjects/"+subject+"/versions/latest").request(CONTENT_TYPE).get(String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
 
-        Map<String,Object> expectedResult = SchemaHelper.getSchema();
+        Map<String,Object> expectedResult = getSchema();
         expectedResult.put("id", (int)schemaId);
         expectedResult.put("version", 1);
         expectedResult.put("subject", subject);
@@ -157,9 +139,9 @@ public class SchemaRegistryResourceIT {
 
         String subject = "deletionsubject";
 
-        int firstId = registerSchema(subject, SchemaHelper.getSchema(new String[] {"fieldA"}));
-        int secondId = registerSchema(subject, SchemaHelper.getSchema(new String[] {"fieldA", "fieldB"}));
-        int thirdId = registerSchema(subject, SchemaHelper.getSchema(new String[] {"fieldA", "fieldB", "fieldC"}));
+        int firstId = registerSchema(subject, getSchema(new String[] {"fieldA"}));
+        int secondId = registerSchema(subject, getSchema(new String[] {"fieldA", "fieldB"}));
+        int thirdId = registerSchema(subject, getSchema(new String[] {"fieldA", "fieldB", "fieldC"}));
 
         String result = client.target(URL_BASE + "/subjects/"+subject+"/versions").request(CONTENT_TYPE).get(String.class);
         List<Integer> versionList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
@@ -189,36 +171,5 @@ public class SchemaRegistryResourceIT {
         } catch (NotFoundException e) {
             // expected
         }
-    }
-
-    @Test
-    public void testCompatibility() throws Exception {
-
-        String subject = "compatibilitysubject";
-
-        Map<String,Object> schema = SchemaHelper.getSchema();
-
-        int schemaId = registerSchema(subject, schema);
-
-        String schemaString = objectMapper.writeValueAsString(schema);
-
-        String result = client.target(URL_BASE+"/subjects/"+subject+"/versions/1").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
-
-        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
-        Boolean isCompatible = (Boolean)actualResultMap.get("is_compatible");
-
-        assertTrue(isCompatible);
-
-        schema.clear();
-        Schema schemaObject = SchemaBuilder.record("recordname").fields().name("fieldname").type().intType().noDefault().endRecord();
-        schema.put("schema", schemaObject.toString());
-        schemaString = objectMapper.writeValueAsString(schema);
-
-        result = client.target(URL_BASE+"/subjects/"+subject+"/versions/1").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
-
-        actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
-        isCompatible = (Boolean)actualResultMap.get("is_compatible");
-
-        assertFalse(isCompatible);
     }
 }

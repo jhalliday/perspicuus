@@ -30,14 +30,7 @@ import static org.junit.Assert.fail;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
-public class TagRegistryResourceIT {
-
-    private final String URL_BASE = "http://localhost:8080";
-    private final String CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private final Client client = RestClient.client;
+public class TagRegistryResourceIT extends AbstractResourceIT {
 
     @Test
     public void testCreateAndReadback() throws Exception {

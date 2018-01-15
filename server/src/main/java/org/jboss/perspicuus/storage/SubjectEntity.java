@@ -15,6 +15,7 @@ package org.jboss.perspicuus.storage;
 import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,10 +31,36 @@ import java.util.List;
 @Indexed
 public class SubjectEntity {
 
+    private String name;
+
+    private List<Integer> schemaIds = new ArrayList<>();
+
+    private String compatibility;
+
     @Id
-    public String name;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @ElementCollection(fetch = FetchType.EAGER)
     @OrderColumn(name = "position")
-    public List<Integer> schemaIds;
+    public List<Integer> getSchemaIds() {
+        return schemaIds;
+    }
+
+    public void setSchemaIds(List<Integer> schemaIds) {
+        this.schemaIds = schemaIds;
+    }
+
+    public String getCompatibility() {
+        return compatibility;
+    }
+
+    public void setCompatibility(String compatibility) {
+        this.compatibility = compatibility;
+    }
 }

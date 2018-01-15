@@ -1,6 +1,6 @@
 
 hibernate:
-  show_sql: false
+  show_sql: true
   hbm2ddl:
     auto: create
 
@@ -55,7 +55,7 @@ swarm:
 
   logging:
     root-logger:
-      level: INFO
+      level: DEBUG
     console-handlers:
       CONSOLE:
-        level: INFO
+        level: DEBUG

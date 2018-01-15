@@ -37,17 +37,11 @@ import java.util.Collections;
 @Indexed
 public class SchemaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public Integer id;
+    private Integer id;
 
-    @Column(nullable = false, unique = true)
-    public String hash;
+    private String hash;
 
-    @Column(nullable = false)
-    @Field(name="content", store = Store.YES, bridge = @FieldBridge(impl = AvroSchemaStringBridge.class))
-    @Lob
-    public String content;
+    private String content;
 
     public SchemaEntity() {}
 
@@ -65,6 +59,36 @@ public class SchemaEntity {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    @Column(nullable = false, unique = true)
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    @Column(nullable = false)
+    @Field(name="content", store = Store.YES, bridge = @FieldBridge(impl = AvroSchemaStringBridge.class))
+    @Lob
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public static boolean isCompatibleWith(String firstSchema, String secondSchema) {

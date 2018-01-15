@@ -30,31 +30,13 @@ import static org.junit.Assert.assertTrue;
  * @since 2017-02
  * @author Jonathan Halliday (jonathan.halliday@redhat.com)
  */
-public class SchemaRecommendationResourceIT {
-
-    private final String URL_BASE = "http://localhost:8080";
-    private final String CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private final Client client = RestClient.client;
-
-    private int registerSchema(String subject, Map<String,Object> request) throws Exception {
-        String schemaString = objectMapper.writeValueAsString(request);
-
-        String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
-        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
-        assertEquals(1, actualResultMap.size());
-        assertTrue(actualResultMap.containsKey("id"));
-        int id = (Integer)actualResultMap.get("id");
-        return id;
-    }
+public class SchemaRecommendationResourceIT extends AbstractResourceIT {
 
     @Test
     public void testSearchForMatchingFieldname() throws Exception {
 
-        int firstId = registerSchema("matchingSubject", SchemaHelper.getSchema(new String[] { "fieldone", "fieldtwo"}));
-        int secondId = registerSchema("matchingSubject", SchemaHelper.getSchema(new String[] { "fieldthree", "fieldfour"}));
+        int firstId = registerSchema("matchingSubject", getSchema(new String[] { "fieldone", "fieldtwo"}));
+        int secondId = registerSchema("matchingSubject", getSchema(new String[] { "fieldthree", "fieldfour"}));
 
         String result = client.target(URL_BASE+"/schemas/matching/fieldthree").request(CONTENT_TYPE).get(String.class);
         List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
@@ -66,8 +48,8 @@ public class SchemaRecommendationResourceIT {
     @Test
     public void testSearchForSimilarSchemas() throws Exception {
 
-        int firstId = registerSchema("similarSubject", SchemaHelper.getSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
-        int secondId = registerSchema("similarSubject", SchemaHelper.getSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
+        int firstId = registerSchema("similarSubject", getSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
+        int secondId = registerSchema("similarSubject", getSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
 
         String result = client.target(URL_BASE+"/schemas/similar/"+firstId).request(CONTENT_TYPE).get(String.class);
         List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});

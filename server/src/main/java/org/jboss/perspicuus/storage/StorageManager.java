@@ -67,7 +67,7 @@ public class StorageManager {
         SchemaEntity result = null;
 
         TypedQuery<SchemaEntity> query = entityManager.createNamedQuery("SchemaEntity.byHash", SchemaEntity.class);
-        query.setParameter("hash", schemaEntity.hash);
+        query.setParameter("hash", schemaEntity.getHash());
         List<SchemaEntity> schemaEntities = query.getResultList();
 
         if (!schemaEntities.isEmpty()) {
@@ -92,11 +92,11 @@ public class StorageManager {
 
         EntityManager entityManager = threadEntityManager.get();
 
-        SubjectEntity schemaEntity;
+        SubjectEntity subjectEntity;
 
-        schemaEntity = entityManager.find(SubjectEntity.class, name);
+        subjectEntity = entityManager.find(SubjectEntity.class, name);
 
-        return schemaEntity;
+        return subjectEntity;
     }
 
     public List<String> listSubjectNames() {
@@ -111,6 +111,31 @@ public class StorageManager {
         return results;
     }
 
+    private SubjectEntity ensureSubject(String subject) {
+        EntityManager entityManager = threadEntityManager.get();
+        SubjectEntity subjectEntity = entityManager.find(SubjectEntity.class, subject);
+        if (subjectEntity == null) {
+            subjectEntity = new SubjectEntity();
+            subjectEntity.setName(subject);
+            subjectEntity.setSchemaIds(new ArrayList<>());
+            entityManager.persist(subjectEntity);
+        }
+        return subjectEntity;
+    }
+
+    public void setCompatibility(String subject, String compatibility) {
+
+        EntityManager entityManager = threadEntityManager.get();
+
+        SubjectEntity subjectEntity = ensureSubject(subject);
+
+        if(!compatibility.equals(subjectEntity.getCompatibility())) {
+            subjectEntity.setCompatibility(compatibility);
+            entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
+        }
+    }
+
     public int register(String subject, String schema) {
 
         EntityManager entityManager = threadEntityManager.get();
@@ -122,17 +147,12 @@ public class StorageManager {
             schemaEntity = new SchemaEntity(schema);
             entityManager.persist(schemaEntity);
         }
-        schemaId = schemaEntity.id;
+        schemaId = schemaEntity.getId();
 
-        SubjectEntity subjectEntity = entityManager.find(SubjectEntity.class, subject);
-        if (subjectEntity == null) {
-            subjectEntity = new SubjectEntity();
-            subjectEntity.name = subject;
-            subjectEntity.schemaIds = new ArrayList<>();
-        }
+        SubjectEntity subjectEntity = ensureSubject(subject);
 
         boolean found = false;
-        for(int id : subjectEntity.schemaIds) {
+        for(int id : subjectEntity.getSchemaIds()) {
             if(id == schemaId) {
                 found = true;
                 break;
@@ -140,8 +160,7 @@ public class StorageManager {
         }
 
         if(!found) {
-            subjectEntity.schemaIds.add(schemaId);
-            entityManager.persist(subjectEntity);
+            subjectEntity.getSchemaIds().add(schemaId);
             entityManager.getTransaction().commit();
             entityManager.getTransaction().begin();
         }
@@ -151,8 +170,8 @@ public class StorageManager {
 
     public void deleteSchemaAtIndex(SubjectEntity subjectEntity, int index) {
         EntityManager entityManager = threadEntityManager.get();
-        if(subjectEntity.schemaIds.get(index) != 0) {
-            subjectEntity.schemaIds.set(index, 0);
+        if(subjectEntity.getSchemaIds().get(index) != 0) {
+            subjectEntity.getSchemaIds().set(index, 0);
             entityManager.getTransaction().commit();
             entityManager.getTransaction().begin();
         }
@@ -184,7 +203,7 @@ public class StorageManager {
             return null;
         }
 
-        return schemaGroupEntity.schemaIds;
+        return schemaGroupEntity.getSchemaIds();
     }
 
     public int registerGroup() {
@@ -193,7 +212,7 @@ public class StorageManager {
         SchemaGroupEntity schemaGroupEntity = new SchemaGroupEntity();
 
         entityManager.persist(schemaGroupEntity);
-        int id = schemaGroupEntity.id;
+        int id = schemaGroupEntity.getId();
 
         entityManager.getTransaction().commit();
         entityManager.getTransaction().begin();
@@ -219,9 +238,9 @@ public class StorageManager {
         }
 
         if(addition) {
-            schemaGroupEntity.schemaIds.add(memberId);
+            schemaGroupEntity.getSchemaIds().add(memberId);
         } else {
-            schemaGroupEntity.schemaIds.remove(memberId);
+            schemaGroupEntity.getSchemaIds().remove(memberId);
         }
         entityManager.persist(schemaGroupEntity);
 
@@ -238,13 +257,13 @@ public class StorageManager {
         TagCollectionEntity tagCollectionEntity = entityManager.find(TagCollectionEntity.class, id);
         if(tagCollectionEntity == null) {
             tagCollectionEntity = new TagCollectionEntity();
-            tagCollectionEntity.id = id;
-            tagCollectionEntity.tags = new HashMap<>();
+            tagCollectionEntity.setId(id);
+            tagCollectionEntity.setTags(new HashMap<>());
         }
         if(value != null) {
-            tagCollectionEntity.tags.put(key, value);
+            tagCollectionEntity.getTags().put(key, value);
         } else {
-            tagCollectionEntity.tags.remove(key);
+            tagCollectionEntity.getTags().remove(key);
         }
         entityManager.persist(tagCollectionEntity);
 
@@ -268,7 +287,7 @@ public class StorageManager {
         List<Integer> ids = new ArrayList<>(results.size());
 
         for(SchemaEntity schemaEntity : results) {
-            ids.add(schemaEntity.id);
+            ids.add(schemaEntity.getId());
         }
 
         return ids;
@@ -290,7 +309,7 @@ public class StorageManager {
         List<Integer> ids = new ArrayList<>();
 
         for(SchemaEntity schemaEntity : results) {
-            ids.add(schemaEntity.id);
+            ids.add(schemaEntity.getId());
         }
 
         return ids;
