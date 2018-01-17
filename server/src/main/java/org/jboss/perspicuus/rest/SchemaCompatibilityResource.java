@@ -73,9 +73,8 @@ public class SchemaCompatibilityResource {
         logger.debugv("determineCompatibility({0} {1} {2})", subject, version, request.schema);
 
         SchemaRegistryResource.VerboseSchema verboseSchema = schemaRegistryResource.getSchemaInScope(subject, version);
-
-        boolean isCompatible = SchemaEntity.isCompatibleWith(verboseSchema.schema, request.schema);
-
+        String level = getCompatibility(subject);
+        boolean isCompatible = SchemaEntity.isCompatibleWith(level, verboseSchema.schema, request.schema);
         CompatibilityReport compatibilityReport = new CompatibilityReport(isCompatible);
 
         return compatibilityReport;
@@ -119,6 +118,17 @@ public class SchemaCompatibilityResource {
         storageManager.setCompatibility(subject, requestedCompatibility.compatibility);
 
         return requestedCompatibility;
+    }
+
+    public String getCompatibility(String subject) {
+
+        SubjectEntity subjectEntity = storageManager.findSubject(subject);
+
+        if(subjectEntity.getCompatibility() != null) {
+            return subjectEntity.getCompatibility();
+        } else {
+            return getDefaultCompatibility().compatibilityLevel;
+        }
     }
 
 

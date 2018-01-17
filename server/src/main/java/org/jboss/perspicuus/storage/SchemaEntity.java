@@ -91,18 +91,36 @@ public class SchemaEntity {
         this.content = content;
     }
 
-    public static boolean isCompatibleWith(String firstSchema, String secondSchema) {
+    public static boolean isCompatibleWith(String compatibilityLevel,  String firstSchema, String secondSchema) {
 
-        SchemaValidator schemaValidator = new SchemaValidatorBuilder().mutualReadStrategy().validateAll();
+        SchemaValidator schemaValidator = validatorFor(compatibilityLevel);
 
-        Schema firstAvroSchema = new Schema.Parser().parse(firstSchema);
-        Schema secondAvroSchema = new Schema.Parser().parse(secondSchema);
+        if(schemaValidator == null) {
+            return true;
+        }
+
+        Schema existingSchema = new Schema.Parser().parse(firstSchema);
+        Schema toValidate = new Schema.Parser().parse(secondSchema);
 
         try {
-            schemaValidator.validate(firstAvroSchema, Collections.singletonList(secondAvroSchema));
+            schemaValidator.validate(toValidate, Collections.singletonList(existingSchema));
             return true;
         } catch (SchemaValidationException e) {
             return false;
         }
+    }
+
+    public static SchemaValidator validatorFor(String compatibilityLevel) {
+        switch (compatibilityLevel) {
+            case "BACKWARD":
+                return new SchemaValidatorBuilder().canReadStrategy().validateLatest();
+            case "FORWARD":
+                return new SchemaValidatorBuilder().canBeReadStrategy().validateLatest();
+            case "FULL":
+                return new SchemaValidatorBuilder().mutualReadStrategy().validateLatest();
+            default:
+                return null;
+        }
+
     }
 }
