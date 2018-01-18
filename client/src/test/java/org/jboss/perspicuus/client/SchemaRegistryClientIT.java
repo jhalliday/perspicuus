@@ -96,13 +96,39 @@ public class SchemaRegistryClientIT {
 
         List<Integer> versions = schemaRegistryClient.listVersions(subject);
         assertEquals(1, versions.size());
-        assertEquals(new Integer(schemaId), versions.get(0));
+        assertEquals(new Integer(1), versions.get(0));
 
         int id = schemaRegistryClient.getLatestVersion(subject);
         assertEquals(schemaId, id);
 
         id = schemaRegistryClient.getVersion(subject, 1);
         assertEquals(schemaId, id);
+    }
+
+    @Test
+    public void testDeletions() throws Exception {
+
+        String subject = "clientdeletionsubject";
+
+        schemaRegistryClient.registerSchema(subject, getTestSchema().toString());
+
+        int result = schemaRegistryClient.deleteVersion(subject, "latest");
+
+        assertEquals(1, result);
+
+        result = schemaRegistryClient.deleteVersion(subject, "latest");
+
+        assertEquals(-1, result);
+
+        schemaRegistryClient.registerSchema(subject, getTestSchema().toString());
+
+        List<Integer> resultList = schemaRegistryClient.deleteSubject(subject);
+
+        assertEquals(1, resultList.size());
+        assertEquals(2, (int)resultList.get(0));
+
+        resultList = schemaRegistryClient.deleteSubject(subject);
+        assertEquals(0, resultList.size());
     }
 
     @Test
@@ -208,6 +234,17 @@ public class SchemaRegistryClientIT {
 
         isCompatible = schemaRegistryClient.determineCompatibility(subject, "latest", incompatibleSchema.toString());
 
-        assertFalse(isCompatible);
+        assertTrue(isCompatible);
+    }
+
+    @Test
+    public void testGlobalCompatibilityLevel() throws Exception {
+
+        String defaultLevel = schemaRegistryClient.getGlobalDefaultCompatibilityLevel();
+        assertEquals("NONE", defaultLevel);
+        String modifiedLevel = schemaRegistryClient.setGlobalDefaultCompatibilityLevel("BACKWARD");
+        assertEquals("BACKWARD", modifiedLevel);
+        String checkLevel = schemaRegistryClient.getGlobalDefaultCompatibilityLevel();
+        assertEquals("BACKWARD", checkLevel);
     }
 }

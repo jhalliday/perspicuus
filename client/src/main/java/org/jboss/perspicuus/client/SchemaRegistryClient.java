@@ -21,10 +21,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Client for communicating with a remote Schema Registry server.
@@ -172,6 +169,86 @@ public class SchemaRegistryClient {
         return id;
     }
 
+    /**
+     * Delete a specific schema version from the subject.
+     *
+     * @param subject
+     * @param version
+     * @throws IOException
+     */
+    public int deleteVersion(String subject, String version) throws IOException {
+        try {
+            String result = client.target(serverURL + "/subjects/" + subject + "/versions/" + version)
+                    .request(CONTENT_TYPE).delete(String.class);
+            return Integer.parseInt(result);
+        } catch (NotFoundException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * Delete a subject.
+     *
+     * @param subject
+     * @throws IOException
+     */
+    public List<Integer> deleteSubject(String subject) throws IOException {
+        try {
+            String resultString = client.target(serverURL + "/subjects/" + subject).request(CONTENT_TYPE).delete(String.class);
+            List<Integer> versionList = objectMapper.readValue(resultString, new TypeReference<List<Integer>>() {
+            });
+            return versionList;
+        } catch (NotFoundException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Get the global default schema compatibility setting.
+     *
+     * @return
+     * @throws IOException
+     */
+    public String getGlobalDefaultCompatibilityLevel() throws IOException {
+        String result = client.target(serverURL+"/config").request(CONTENT_TYPE).get(String.class);
+        Map<String, Object> resultMap = objectMapper.readValue(result, new TypeReference<Map<String, Object>>() {});
+        return (String)resultMap.get("compatibilityLevel");
+    }
+
+    /**
+     * Set the global default schema compatibility setting.
+     *
+     * @param level
+     * @return
+     * @throws IOException
+     */
+    public String setGlobalDefaultCompatibilityLevel(String level) throws IOException {
+        Map<String,Object> requestMap = new HashMap<>();
+        requestMap.put("compatibility", level);
+        String requestString = objectMapper.writeValueAsString(requestMap);
+        String result = client.target(serverURL+"/config").request(CONTENT_TYPE).put(Entity.json(requestString), String.class);
+        Map<String, Object> resultMap = objectMapper.readValue(result, new TypeReference<Map<String, Object>>() {});
+        return (String)resultMap.get("compatibility");
+    }
+
+    /**
+     * Configure a subject's schema compatibility setting.
+     *
+     * @param subject
+     * @param level
+     * @throws IOException
+     */
+    public void setSubjectCompatibilityLevel(String subject, String level) throws IOException {
+        Map<String,Object> requestMap = new HashMap<>();
+        requestMap.put("compatibility", level);
+        String requestString = objectMapper.writeValueAsString(requestMap);
+        try {
+            client.target(serverURL + "/config/" + subject).request(CONTENT_TYPE).put(Entity.json(requestString), String.class);
+        } catch(NotFoundException e) {
+            return;
+        }
+    }
+
 
     public void annotate(int objectId, String key, String value) throws IOException {
         client.target(serverURL+"/tags/"+objectId+"/"+key).request(CONTENT_TYPE).post(Entity.json(value), String.class);
@@ -252,7 +329,7 @@ public class SchemaRegistryClient {
         requestMap.put("schema", schema);
         String requestString = objectMapper.writeValueAsString(requestMap);
 
-        String result = client.target(serverURL+"/subjects/"+subject+"/versions/"+version).request(CONTENT_TYPE).post(Entity.json(requestString), String.class);
+        String result = client.target(serverURL+"/compatibility/subjects/"+subject+"/versions/"+version).request(CONTENT_TYPE).post(Entity.json(requestString), String.class);
 
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
         Boolean isCompatible = (Boolean)actualResultMap.get("is_compatible");
