@@ -12,6 +12,7 @@
  */
 package org.jboss.perspicuus.rest;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.*;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.StorageManager;
@@ -63,6 +64,8 @@ public class SchemaRegistryResource {
         public int id;
         public String subject;
         public int version;
+
+        @JsonIgnore SchemaEntity schemaEntity;
     }
 
     public static class CustomNotFoundException extends NotFoundException {
@@ -157,8 +160,8 @@ public class SchemaRegistryResource {
     @GET
     @Path("/subjects/{subject}/versions")
     @RolesAllowed("catalog_user")
-    public List<Integer> listSubjectSchemaIds(@PathParam("subject") String subject) {
-        logger.debugv("listSubjectSchemaIds {0}", subject);
+    public List<Integer> listSubjectVersions(@PathParam("subject") String subject) {
+        logger.debugv("listSubjectVersions {0}", subject);
 
         SubjectEntity subjectEntity = storageManager.findSubject(subject);
 
@@ -236,6 +239,7 @@ public class SchemaRegistryResource {
         verboseSchema.id = schemaEntity.getId();
         verboseSchema.subject = subject;
         verboseSchema.version = versionResolution.version;
+        verboseSchema.schemaEntity = schemaEntity;
         return verboseSchema;
 
     }

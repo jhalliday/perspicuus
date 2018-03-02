@@ -12,13 +12,16 @@
  */
 package org.jboss.perspicuus.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,18 +54,43 @@ public abstract class AbstractResourceIT {
         return id;
     }
 
-    public static Map<String,Object> getSchema() {
-        return getSchema(new String[0]);
+    public Map<String,Object> getAvroSchema() {
+        return getAvroSchema(new String[0]);
     }
 
-    public static Map<String,Object> getSchema(String[] fieldnames) {
-        Map<String,Object> schemaOuterMap = new HashMap<>();
+    public Map<String,Object> getAvroSchema(String[] fieldnames) {
         SchemaBuilder.FieldAssembler<Schema> fieldAssembler = SchemaBuilder.record("recordname").fields();
         for(String fieldname : fieldnames) {
             fieldAssembler.name(fieldname).type().stringType().noDefault();
         }
         Schema schema = fieldAssembler.endRecord();
-        schemaOuterMap.put("schema", schema.toString());
+
+        Map<String,Object> schemaOuterMap = wrapInEnvelope(schema.toString());
+        return schemaOuterMap;
+    }
+
+    public Map<String,Object> getJsonSchemaSchema() throws IOException {
+        return getJsonSchemaSchema(new String[0]);
+    }
+
+    public Map<String,Object> getJsonSchemaSchema(String[] fieldnames) throws IOException {
+
+        Map<String,Object> properties = new HashMap<>();
+        for(String fieldname : fieldnames) {
+            Map<String,Object> fieldtype = new HashMap<>();
+            fieldtype.put("type", "string");
+            properties.put(fieldname, fieldtype);
+        }
+        Map<String,Object> schema = new HashMap<>();
+        schema.put("properties", properties);
+
+            Map<String, Object> schemaOuterMap = wrapInEnvelope(objectMapper.writeValueAsString(schema));
+            return schemaOuterMap;
+    }
+
+    public Map<String,Object> wrapInEnvelope(String schema) {
+        Map<String,Object> schemaOuterMap = new HashMap<>();
+        schemaOuterMap.put("schema", schema);
         return schemaOuterMap;
     }
 }

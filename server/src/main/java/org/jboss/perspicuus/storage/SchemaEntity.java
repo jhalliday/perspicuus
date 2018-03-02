@@ -12,17 +12,13 @@
  */
 package org.jboss.perspicuus.storage;
 
-import org.apache.avro.Schema;
-import org.apache.avro.SchemaValidationException;
-import org.apache.avro.SchemaValidator;
-import org.apache.avro.SchemaValidatorBuilder;
 import org.hibernate.search.annotations.*;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Optional;
 
 /**
  * Storage layer representation of a Schema.
@@ -35,7 +31,15 @@ import java.util.Collections;
         @NamedQuery(name = "SchemaEntity.byHash", query = "SELECT e FROM SchemaEntity e WHERE e.hash=:hash")
 })
 @Indexed
+@ClassBridge(name="content", store = Store.YES, impl=SchemaEntityClassBridge.class)
 public class SchemaEntity {
+
+    /*
+      A SchemaEntity may contain a schema in one of a number of known types (e.g. Avro, JsonSchema, ...)
+      These are not polymorphic at the object model or relation storage levels, since there all schema are just Strings.
+      However, they are polymorphic with regard to the some functions that require internal knowledge of the schema
+      structure, requiring a type-appropriate Parser to be applied for e.g. search indexing or compatibility testing.
+     */
 
     private Integer id;
 
@@ -43,11 +47,30 @@ public class SchemaEntity {
 
     private String content;
 
+    private SchemaType schemaType;
+
     public SchemaEntity() {}
 
     public SchemaEntity(String schema) {
-        Schema avroSchema = new Schema.Parser().parse(schema);
-        this.content = avroSchema.toString();
+
+        Optional<String> canonicalSchema = Optional.empty();
+
+        // the only way to identify the type of schema we've been given is to
+        // try each parser in turn until one accepts it as valid.
+
+        for(SchemaType schemaType : SchemaType.values()) {
+            SchemaParser schemaParser = schemaType.getSchemaParser();
+            canonicalSchema = schemaParser.parseToCanonicalForm(schema);
+            if(canonicalSchema.isPresent()) {
+                this.content = canonicalSchema.get();
+                this.schemaType = schemaType;
+                break;
+            }
+        }
+
+        if(!canonicalSchema.isPresent()) {
+            throw new IllegalArgumentException("can't parse provided schema as any known type");
+        }
 
         try {
             // https://avro.apache.org/docs/current/spec.html#Schema+Fingerprints
@@ -81,7 +104,6 @@ public class SchemaEntity {
     }
 
     @Column(nullable = false)
-    @Field(name="content", store = Store.YES, bridge = @FieldBridge(impl = AvroSchemaStringBridge.class))
     @Lob
     public String getContent() {
         return content;
@@ -91,36 +113,15 @@ public class SchemaEntity {
         this.content = content;
     }
 
-    public static boolean isCompatibleWith(String compatibilityLevel,  String firstSchema, String secondSchema) {
-
-        SchemaValidator schemaValidator = validatorFor(compatibilityLevel);
-
-        if(schemaValidator == null) {
-            return true;
-        }
-
-        Schema existingSchema = new Schema.Parser().parse(firstSchema);
-        Schema toValidate = new Schema.Parser().parse(secondSchema);
-
-        try {
-            schemaValidator.validate(toValidate, Collections.singletonList(existingSchema));
-            return true;
-        } catch (SchemaValidationException e) {
-            return false;
-        }
+    public SchemaType getSchemaType() {
+        return schemaType;
     }
 
-    public static SchemaValidator validatorFor(String compatibilityLevel) {
-        switch (compatibilityLevel) {
-            case "BACKWARD":
-                return new SchemaValidatorBuilder().canReadStrategy().validateLatest();
-            case "FORWARD":
-                return new SchemaValidatorBuilder().canBeReadStrategy().validateLatest();
-            case "FULL":
-                return new SchemaValidatorBuilder().mutualReadStrategy().validateLatest();
-            default:
-                return null;
-        }
+    public void setSchemaType(SchemaType schemaType) {
+        this.schemaType = schemaType;
+    }
 
+    public boolean isCompatibleWith(String compatibilityLevel, String secondSchema) {
+        return schemaType.getSchemaParser().isCompatibleWith(compatibilityLevel, this.content, secondSchema);
     }
 }

@@ -13,13 +13,9 @@
 package org.jboss.perspicuus.rest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,8 +31,8 @@ public class SchemaRecommendationResourceIT extends AbstractResourceIT {
     @Test
     public void testSearchForMatchingFieldname() throws Exception {
 
-        int firstId = registerSchema("matchingSubject", getSchema(new String[] { "fieldone", "fieldtwo"}));
-        int secondId = registerSchema("matchingSubject", getSchema(new String[] { "fieldthree", "fieldfour"}));
+        int firstId = registerSchema("matchingSubject", getAvroSchema(new String[] { "fieldone", "fieldtwo"}));
+        int secondId = registerSchema("matchingSubject", getAvroSchema(new String[] { "fieldthree", "fieldfour"}));
 
         String result = client.target(URL_BASE+"/schemas/matching/fieldthree").request(CONTENT_TYPE).get(String.class);
         List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
@@ -46,10 +42,24 @@ public class SchemaRecommendationResourceIT extends AbstractResourceIT {
     }
 
     @Test
+    public void testSearchForMatchingFieldnameUsingJsonSchema() throws Exception {
+
+        int firstId = registerSchema("matchingSubject", getJsonSchemaSchema(new String[] { "fieldeleven", "fieldtwelve"}));
+        int secondId = registerSchema("matchingSubject", getJsonSchemaSchema(new String[] { "fieldthirteen", "fieldfourteen"}));
+
+        String result = client.target(URL_BASE+"/schemas/matching/fieldthirteen").request(CONTENT_TYPE).get(String.class);
+        List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
+
+        assertEquals(1, ids.size());
+        assertEquals((Integer)secondId, ids.get(0));
+    }
+
+
+    @Test
     public void testSearchForSimilarSchemas() throws Exception {
 
-        int firstId = registerSchema("similarSubject", getSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
-        int secondId = registerSchema("similarSubject", getSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
+        int firstId = registerSchema("similarSubject", getAvroSchema(new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}));
+        int secondId = registerSchema("similarSubject", getAvroSchema(new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}));
 
         String result = client.target(URL_BASE+"/schemas/similar/"+firstId).request(CONTENT_TYPE).get(String.class);
         List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});

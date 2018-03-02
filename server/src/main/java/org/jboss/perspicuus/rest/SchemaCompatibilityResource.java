@@ -14,7 +14,6 @@ package org.jboss.perspicuus.rest;
 
 import io.swagger.annotations.*;
 import org.jboss.logging.Logger;
-import org.jboss.perspicuus.storage.SchemaEntity;
 import org.jboss.perspicuus.storage.StorageManager;
 import org.jboss.perspicuus.storage.SubjectEntity;
 
@@ -74,7 +73,8 @@ public class SchemaCompatibilityResource {
 
         SchemaRegistryResource.VerboseSchema verboseSchema = schemaRegistryResource.getSchemaInScope(subject, version);
         String level = getCompatibility(subject);
-        boolean isCompatible = SchemaEntity.isCompatibleWith(level, verboseSchema.schema, request.schema);
+
+        boolean isCompatible = verboseSchema.schemaEntity.isCompatibleWith(level, request.schema);
         CompatibilityReport compatibilityReport = new CompatibilityReport(isCompatible);
 
         return compatibilityReport;

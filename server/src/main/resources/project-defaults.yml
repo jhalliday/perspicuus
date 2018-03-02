@@ -55,7 +55,10 @@ swarm:
 
   logging:
     root-logger:
-      level: DEBUG
+      level: INFO
     console-handlers:
       CONSOLE:
-        level: DEBUG
+        level: INFO
+    loggers:
+        org.jboss.security:
+          level: INFO

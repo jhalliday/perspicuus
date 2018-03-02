@@ -72,7 +72,7 @@ public class SchemaCompatibilityResourceIT extends AbstractResourceIT {
 
         String subject = "compatibilitysubject";
 
-        Map<String,Object> schema = getSchema();
+        Map<String,Object> schema = getAvroSchema();
 
         int schemaId = registerSchema(subject, schema);
 

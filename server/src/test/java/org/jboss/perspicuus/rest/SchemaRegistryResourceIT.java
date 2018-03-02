@@ -13,13 +13,9 @@
 package org.jboss.perspicuus.rest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.avro.Schema;
-import org.apache.avro.SchemaBuilder;
 import org.junit.Test;
 
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 
 import java.util.List;
@@ -46,7 +42,7 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
             // expected
         }
 
-        Map<String,Object> schema = getSchema();
+        Map<String,Object> schema = getAvroSchema();
 
         int schemaId = registerSchema(subject, schema);
 
@@ -61,10 +57,24 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
     }
 
     @Test
+    public void testRegisterAndReadbackOfJsonSchema() throws Exception {
+
+        String subject = "testjsonsubject";
+        Map<String,Object> schema = getJsonSchemaSchema(new String[] {"fieldone"});
+
+        int schemaId = registerSchema(subject, schema);
+
+        String result = client.target(URL_BASE+"/schemas/ids/"+schemaId).request(CONTENT_TYPE).get(String.class);
+        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+
+        assertEquals(schema, actualResultMap);
+    }
+
+    @Test
     public void testSearch() throws Exception {
 
         String subject = "searchsubject";
-        Map<String,Object> schema = getSchema();
+        Map<String,Object> schema = getAvroSchema();
         String schemaString = objectMapper.writeValueAsString(schema);
 
         try {
@@ -86,7 +96,7 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
     public void testSubjectVersions() throws Exception {
 
         String subject = "versionsubject";
-        Map<String,Object> schema = getSchema();
+        Map<String,Object> schema = getAvroSchema();
         String schemaString = objectMapper.writeValueAsString(schema);
 
         try {
@@ -116,12 +126,12 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
         List<Integer> versionList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
 
         assertEquals(1, versionList.size());
-        assertEquals((Integer)schemaId, versionList.get(0));
+        assertEquals(Integer.valueOf(1), versionList.get(0));
 
         result = client.target(URL_BASE + "/subjects/"+subject+"/versions/latest").request(CONTENT_TYPE).get(String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
 
-        Map<String,Object> expectedResult = getSchema();
+        Map<String,Object> expectedResult = getAvroSchema();
         expectedResult.put("id", (int)schemaId);
         expectedResult.put("version", 1);
         expectedResult.put("subject", subject);
@@ -139,9 +149,9 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
 
         String subject = "deletionsubject";
 
-        int firstId = registerSchema(subject, getSchema(new String[] {"fieldA"}));
-        int secondId = registerSchema(subject, getSchema(new String[] {"fieldA", "fieldB"}));
-        int thirdId = registerSchema(subject, getSchema(new String[] {"fieldA", "fieldB", "fieldC"}));
+        int firstId = registerSchema(subject, getAvroSchema(new String[] {"fieldA"}));
+        int secondId = registerSchema(subject, getAvroSchema(new String[] {"fieldA", "fieldB"}));
+        int thirdId = registerSchema(subject, getAvroSchema(new String[] {"fieldA", "fieldB", "fieldC"}));
 
         String result = client.target(URL_BASE + "/subjects/"+subject+"/versions").request(CONTENT_TYPE).get(String.class);
         List<Integer> versionList = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});

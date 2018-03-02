@@ -217,6 +217,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>0.1.13</version>
+        </dependency>
+
         <!-- we get these for free on java8, but need them explicitly for java9 -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
