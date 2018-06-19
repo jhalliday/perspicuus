@@ -4,17 +4,11 @@ hibernate:
   hbm2ddl:
     auto: create
 
-  search:
-    default:
-      # 'ram' or 'filesystem'
-      directory_provider: ram
-      indexBase: /tmp/lucene/indexes
-
 
 swarm:
 
   deployment:
-    perspicuus-server-0.1.0-SNAPSHOT.war:
+    perspicuus-server-0.2.0-SNAPSHOT.war:
       web:
         login-config:
           auth-method: BASIC

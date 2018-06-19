@@ -12,8 +12,6 @@
  */
 package org.jboss.perspicuus.storage;
 
-import org.hibernate.search.annotations.Indexed;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +26,6 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "SubjectEntity.allNames", query = "SELECT e.name FROM SubjectEntity e")
 })
-@Indexed
 public class SubjectEntity {
 
     private String name;

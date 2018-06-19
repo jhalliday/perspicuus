@@ -12,8 +12,6 @@
  */
 package org.jboss.perspicuus.storage;
 
-import org.hibernate.search.annotations.*;
-
 import javax.persistence.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -30,15 +28,13 @@ import java.util.Optional;
 @NamedQueries({
         @NamedQuery(name = "SchemaEntity.byHash", query = "SELECT e FROM SchemaEntity e WHERE e.hash=:hash")
 })
-@Indexed
-@ClassBridge(name="content", store = Store.YES, impl=SchemaEntityClassBridge.class)
 public class SchemaEntity {
 
     /*
       A SchemaEntity may contain a schema in one of a number of known types (e.g. Avro, JsonSchema, ...)
       These are not polymorphic at the object model or relation storage levels, since there all schema are just Strings.
       However, they are polymorphic with regard to the some functions that require internal knowledge of the schema
-      structure, requiring a type-appropriate Parser to be applied for e.g. search indexing or compatibility testing.
+      structure, requiring a type-appropriate Parser to be applied for e.g. compatibility testing.
      */
 
     private Integer id;

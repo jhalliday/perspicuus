@@ -33,15 +33,6 @@ public interface SchemaParser {
     Optional<String> parseToCanonicalForm(String rawSchema);
 
     /**
-     * Given a valid Schema of appropriate format, extract a list of the tokens to be used
-     * for full-text search indexing e.g. the field names.
-     *
-     * @param schema
-     * @return
-     */
-    List<String> tokenizeForSearch(String schema);
-
-    /**
      * Determine the compatibility of two schema, according to appropriate type specific rules.
      *
      * @param compatibilityLevel

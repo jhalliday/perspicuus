@@ -23,7 +23,7 @@ wildfly-swarm (resteasy, hibernate, hibernate-search).
 ....
 cd server
 mvn clean compile verify
-java -jar target/server-0.1.0-SNAPSHOT-swarm.jar
+java -jar target/server-0.2.0-SNAPSHOT-swarm.jar
 ....
 
 The server uses two forms of storage: a relational database for canonical state (via hibernate) and a filesystem for full-text indexes (lucene via hibernate-search).
@@ -42,14 +42,6 @@ java -Dswarm.datasources.data-sources.DataSourcePerspicuus.driver-name=${DB_DRIV
 wildfly-swarm also supports overriding configuration parameters by specifying additional configuration files, see https://reference.wildfly-swarm.io/configuration.html for details.
 
 Note these post-build configuration mechanisms are limited to using database drivers which are part of the build (h2 and mysql). For other database types supported by hibernate, build with pom.xml changes to include the appropriate driver dependency.
-
-The server uses hibernate-search for full text indexing.
-Edit persistence.xml to use filesystem storage instead of RAM for this.
-Alternatively, the index storage configuration for an existing binary build can be overridden e.g.
-
-....
-java -Dhibernate.search.default.directory_provider=filesystem -Dhibernate.search.default.indexBase=/var/lib/lucene/indexes
-....
 
 Configuration for other aspects of the server e.g. logging and authentication, can likewise be changed at build time or by runtime overrides.
 

@@ -37,24 +37,6 @@
     },
 
     {
-      "apiVersion": "v1",
-      "kind": "PersistentVolumeClaim",
-      "metadata": {
-        "name": "${APPLICATION_NAME}"
-      },
-      "spec": {
-        "accessModes": [
-          "ReadWriteOnce"
-        ],
-        "resources": {
-          "requests": {
-            "storage": "${VOLUME_CAPACITY}"
-          }
-        }
-      }
-    },
-
-    {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
@@ -134,13 +116,7 @@
                   },
                   {
                     "name": "JAVA_OPTIONS",
-                    "value": "-Dswarm.http.port=${BIND_PORT} -Dswarm.datasources.data-sources.DataSourcePerspicuus.driver-name=${DB_DRIVER} -Dswarm.datasources.data-sources.DataSourcePerspicuus.connection-url=${DB_URL} -Dswarm.datasources.data-sources.DataSourcePerspicuus.user-name=${DB_USERNAME} -Dswarm.datasources.data-sources.DataSourcePerspicuus.password=${DB_PASSWORD} -Dhibernate.search.default.directory_provider=filesystem -Dhibernate.search.default.indexBase=/var/lib/lucene/indexes"
-                  }
-                ],
-                "volumeMounts": [
-                  {
-                    "mountPath": "/var/lib/lucene",
-                    "name": "${APPLICATION_NAME}-lucene-data"
+                    "value": "-Dswarm.http.port=${BIND_PORT} -Dswarm.datasources.data-sources.DataSourcePerspicuus.driver-name=${DB_DRIVER} -Dswarm.datasources.data-sources.DataSourcePerspicuus.connection-url=${DB_URL} -Dswarm.datasources.data-sources.DataSourcePerspicuus.user-name=${DB_USERNAME} -Dswarm.datasources.data-sources.DataSourcePerspicuus.password=${DB_PASSWORD}"
                   }
                 ],
                 "resources": {},
@@ -148,14 +124,6 @@
                 "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "privileged": false
-                }
-              }
-            ],
-            "volumes": [
-              {
-                "name": "${APPLICATION_NAME}-lucene-data",
-                "persistentVolumeClaim": {
-                  "claimName": "${APPLICATION_NAME}"
                 }
               }
             ],
@@ -204,13 +172,6 @@
       "name": "DB_PASSWORD",
       "required": true,
       "value": "sa"
-    },
-    {
-      "description": "Volume space available for search index, e.g. 512Mi, 1Gi.",
-      "displayName": "Volume Capacity",
-      "name": "VOLUME_CAPACITY",
-      "required": true,
-      "value": "500Mi"
     }
   ]
 }

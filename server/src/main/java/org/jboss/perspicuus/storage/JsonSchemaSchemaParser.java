@@ -54,31 +54,6 @@ public class JsonSchemaSchemaParser implements SchemaParser {
         }
     }
 
-    @Override
-    public List<String> tokenizeForSearch(String schema) {
-
-        List<String> results = new ArrayList<>();
-
-        try {
-
-            JsonNode node = objectMapper.readTree(schema);
-
-            ObjectNode objectNode = (ObjectNode)node.get("properties");
-            if(objectNode != null) {
-                Iterator<String> iter = objectNode.fieldNames();
-                while(iter.hasNext()) {
-                    results.add(iter.next());
-                }
-            }
-
-        } catch(IOException e) {
-            // should be rare, since this code is only called after the same schema has already been parsed elsewhere.
-            throw new RuntimeException("failed to parse json-schema: "+schema);
-        }
-
-        return results;
-    }
-
     public boolean isCompatibleWith(String compatibilityLevel, String existingSchema, String proposedSchema) {
         return existingSchema.equals(proposedSchema);
     }

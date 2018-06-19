@@ -39,21 +39,6 @@ public class AvroSchemaParser implements SchemaParser {
     }
 
     @Override
-    public List<String> tokenizeForSearch(String schema) {
-
-        Schema avroSchema = new Schema.Parser().parse(schema);
-        List<String> tokens = new ArrayList<>();
-
-        tokens.add(avroSchema.getName());
-
-        for (Schema.Field field : avroSchema.getFields()) {
-            tokens.add(field.name());
-        }
-
-        return tokens;
-    }
-
-    @Override
     public boolean isCompatibleWith(String compatibilityLevel, String firstSchema, String proposedSchema) {
 
         SchemaValidator schemaValidator = validatorFor(compatibilityLevel);
