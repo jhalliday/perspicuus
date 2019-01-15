@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2017-2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ import javax.persistence.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -118,6 +119,6 @@ public class SchemaEntity {
     }
 
     public boolean isCompatibleWith(String compatibilityLevel, String secondSchema) {
-        return schemaType.getSchemaParser().isCompatibleWith(compatibilityLevel, this.content, secondSchema);
+        return schemaType.getSchemaParser().isCompatibleWith(compatibilityLevel, Collections.singletonList(this.content), secondSchema);
     }
 }

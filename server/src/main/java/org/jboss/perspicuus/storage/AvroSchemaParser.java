@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2018, 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@ package org.jboss.perspicuus.storage;
 
 import org.apache.avro.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Schema parsing functions for Avro schema.
@@ -39,7 +39,7 @@ public class AvroSchemaParser implements SchemaParser {
     }
 
     @Override
-    public boolean isCompatibleWith(String compatibilityLevel, String firstSchema, String proposedSchema) {
+    public boolean isCompatibleWith(String compatibilityLevel, List<String> existingSchemaStrings, String proposedSchemaString) {
 
         SchemaValidator schemaValidator = validatorFor(compatibilityLevel);
 
@@ -47,11 +47,12 @@ public class AvroSchemaParser implements SchemaParser {
             return true;
         }
 
-        Schema existingSchema = new Schema.Parser().parse(firstSchema);
-        Schema toValidate = new Schema.Parser().parse(proposedSchema);
+        List<Schema> existingSchemas = existingSchemaStrings.stream().map(s -> new Schema.Parser().parse(s)).collect(Collectors.toList());
+        Collections.reverse(existingSchemas); // the most recent must come first, i.e. reverse-chronological.
+        Schema toValidate = new Schema.Parser().parse(proposedSchemaString);
 
         try {
-            schemaValidator.validate(toValidate, Collections.singletonList(existingSchema));
+            schemaValidator.validate(toValidate, existingSchemas);
             return true;
         } catch (SchemaValidationException e) {
             return false;
@@ -62,10 +63,16 @@ public class AvroSchemaParser implements SchemaParser {
         switch (compatibilityLevel) {
             case "BACKWARD":
                 return new SchemaValidatorBuilder().canReadStrategy().validateLatest();
+            case "BACKWARD_TRANSITIVE":
+                return new SchemaValidatorBuilder().canReadStrategy().validateAll();
             case "FORWARD":
                 return new SchemaValidatorBuilder().canBeReadStrategy().validateLatest();
+            case "FORWARD_TRANSITIVE":
+                return new SchemaValidatorBuilder().canBeReadStrategy().validateAll();
             case "FULL":
                 return new SchemaValidatorBuilder().mutualReadStrategy().validateLatest();
+            case "FULL_TRANSITIVE":
+                return new SchemaValidatorBuilder().mutualReadStrategy().validateAll();
             default:
                 return null;
         }

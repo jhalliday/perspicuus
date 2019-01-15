@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2017-2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@ package org.jboss.perspicuus.storage;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Storage layer functions. Uses JDBC database via JPA.
@@ -72,6 +69,19 @@ public class StorageManager {
 
         return result;
     }
+
+    public List<SchemaEntity> getSchemas(String subject) {
+        EntityManager entityManager = threadEntityManager.get();
+        SubjectEntity subjectEntity = findSubject(subject);
+        if(subjectEntity == null) {
+            return Collections.emptyList();
+        }
+        Query query = entityManager.createQuery("SELECT s FROM SchemaEntity s WHERE s.id IN :idList");
+        query.setParameter("idList", subjectEntity.getSchemaIds());
+        List<SchemaEntity> results =  query.getResultList(); // TODO enforce ordering.
+        return results;
+    }
+
 
     public SchemaEntity findSchema(int id) {
 
@@ -173,11 +183,23 @@ public class StorageManager {
         }
     }
 
-    public void deleteSubject(SubjectEntity subjectEntity) {
+    public List<Integer> deleteAllSchemasFromSubject(SubjectEntity subjectEntity) {
         EntityManager entityManager = threadEntityManager.get();
-        entityManager.remove(subjectEntity);
+
+        List<Integer> schemaIds = subjectEntity.getSchemaIds();
+        ArrayList<Integer> versions = new ArrayList<>(schemaIds.size());
+        for(int i = 0; i < schemaIds.size(); i++) {
+            if(schemaIds.get(i) != 0) {
+                // versions number from one, arrays from 0, so remember to offset...
+                versions.add(i+1);
+                schemaIds.set(i, 0);
+            }
+        }
+
         entityManager.getTransaction().commit();
         entityManager.getTransaction().begin();
+
+        return versions;
     }
 
     public TagCollectionEntity getTags(int id) {

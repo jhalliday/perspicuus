@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!--
-        Copyright 2017, 2018 Red Hat, Inc. and/or its affiliates.
+        Copyright 2017-2019 Red Hat, Inc. and/or its affiliates.
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@
             <id>central</id>
             <url>http://repo1.maven.org/maven2</url>
             <releases>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
@@ -54,7 +54,7 @@
             <id>central</id>
             <url>http://repo1.maven.org/maven2</url>
             <releases>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
@@ -64,8 +64,7 @@
     </pluginRepositories>
 
     <properties>
-        <version.wildfly.swarm>7.1.0.redhat-77</version.wildfly.swarm>
-        <version.wildfly.swarm.community>2018.5.0</version.wildfly.swarm.community>
+        <version.thorntail>2.2.1.Final</version.thorntail>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -79,9 +78,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wildfly.swarm</groupId>
+                <groupId>io.thorntail</groupId>
                 <artifactId>bom</artifactId>
-                <version>${version.wildfly.swarm}</version>
+                <version>${version.thorntail}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -92,9 +91,9 @@
         <!--<finalName>perspicuus</finalName>-->
         <plugins>
             <plugin>
-                <groupId>org.wildfly.swarm</groupId>
-                <artifactId>wildfly-swarm-plugin</artifactId>
-                <version>${version.wildfly.swarm}</version>
+                <groupId>io.thorntail</groupId>
+                <artifactId>thorntail-maven-plugin</artifactId>
+                <version>${version.thorntail}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -193,24 +192,24 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly.swarm</groupId>
+            <groupId>io.thorntail</groupId>
             <artifactId>cdi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.swarm</groupId>
+            <groupId>io.thorntail</groupId>
             <artifactId>cdi-config</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.swarm</groupId>
+            <groupId>io.thorntail</groupId>
             <artifactId>jaxrs</artifactId>
         </dependency>
         <!-- https://issues.jboss.org/browse/SWARM-1259 -->
         <dependency>
-            <groupId>org.wildfly.swarm</groupId>
+            <groupId>io.thorntail</groupId>
             <artifactId>jaxrs-jsonp</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.swarm</groupId>
+            <groupId>io.thorntail</groupId>
             <artifactId>jpa</artifactId>
         </dependency>
 
@@ -223,9 +222,9 @@
 
         <!-- https://issues.jboss.org/browse/SWARM-944 -->
         <dependency>
-            <groupId>org.wildfly.swarm</groupId>
+            <groupId>io.thorntail</groupId>
             <artifactId>swagger</artifactId>
-            <version>${version.wildfly.swarm.community}</version>
+            <version>${version.thorntail}</version>
         </dependency>
 
         <!-- newer version 8.0.11 available - test upgrade? -->
@@ -267,6 +266,12 @@
             <artifactId>jaxb-api</artifactId>
             <version>2.2.4-redhat-1</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.wire</groupId>
+            <artifactId>wire-schema</artifactId>
+            <version>2.2.0</version>
         </dependency>
 
     </dependencies>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2017-2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,9 @@ public class SchemaRegistryResource {
 
     @Inject
     StorageManager storageManager;
+
+    @Inject
+    SchemaCompatibilityResource schemaCompatibilityResource;
 
     // some request/response cases use an unadorned schema representation
     public static class TerseSchema {
@@ -124,7 +127,7 @@ public class SchemaRegistryResource {
     @POST
     @Path("/subjects/{subject}")
     @RolesAllowed("catalog_user")
-    public TerseSchema scopedSearch(@PathParam("subject") String subject, TerseSchema request) {
+    public VerboseSchema scopedSearch(@PathParam("subject") String subject, TerseSchema request) {
         logger.debugv("scopedSearch {0} {1}", subject, request.schema);
 
         SchemaEntity schemaEntity = storageManager.findByHash(request.schema);
@@ -134,12 +137,25 @@ public class SchemaRegistryResource {
             throw new CustomNotFoundException();
         }
 
-        TerseSchema terseSchema = new TerseSchema();
-        if(subjectEntity.getSchemaIds().contains(schemaEntity.getId())) {
-            terseSchema.schema = schemaEntity.getContent();
+        VerboseSchema verboseSchema = new VerboseSchema();
+        int version = -1;
+        for(int i = 0; i < subjectEntity.getSchemaIds().size(); i++) {
+            if(subjectEntity.getSchemaIds().get(i).equals(schemaEntity.getId())) {
+                version = i+1;
+                break;
+            }
         }
 
-        return terseSchema;
+        if(version > 0) {
+            verboseSchema.id = schemaEntity.getId();
+            verboseSchema.schema = schemaEntity.getContent();
+            verboseSchema.subject = subject;
+            verboseSchema.version = version;
+        } else {
+            throw new NotFoundException();
+        }
+
+        return verboseSchema;
     }
 
     @ApiOperation(value = "List all known subjects")
@@ -178,6 +194,10 @@ public class SchemaRegistryResource {
             }
         }
 
+        if(versions.isEmpty()) {
+            throw new NotFoundException(); // effectively deleted if no versions remain.
+        }
+
         return versions;
     }
 
@@ -185,8 +205,13 @@ public class SchemaRegistryResource {
         int schemaId = 0;
         int resolvedVersion = 0;
         if("latest".equalsIgnoreCase(version)) {
-            resolvedVersion = subjectEntity.getSchemaIds().size();
-            schemaId = subjectEntity.getSchemaIds().get(resolvedVersion-1);
+            for(int i = subjectEntity.getSchemaIds().size()-1; i >= 0; i--) {
+                if(subjectEntity.getSchemaIds().get(i) != 0) {
+                    resolvedVersion = i+1;
+                    schemaId = subjectEntity.getSchemaIds().get(i);
+                    break;
+                }
+            }
         } else {
             resolvedVersion = Integer.parseInt(version);
             if(subjectEntity.getSchemaIds().size() >= resolvedVersion) {
@@ -262,10 +287,10 @@ public class SchemaRegistryResource {
         }
 
         VersionResolution versionResolution = resolveVersion(version, subjectEntity);
-        int index = versionResolution.version-1;
-        if(subjectEntity.getSchemaIds().get(index) == 0) {
+        if(versionResolution.schemaId == 0) {
             throw new CustomNotFoundException();
         } else {
+            int index = versionResolution.version-1;
             storageManager.deleteSchemaAtIndex(subjectEntity, index);
             return versionResolution.version;
         }
@@ -287,16 +312,7 @@ public class SchemaRegistryResource {
             throw new CustomNotFoundException();
         }
 
-        List<Integer> schemaIds = subjectEntity.getSchemaIds();
-        ArrayList<Integer> versions = new ArrayList<>(schemaIds.size());
-        for(int i = 0; i < schemaIds.size(); i++) {
-            if(schemaIds.get(i) != 0) {
-                // versions number from one, arrays from 0, so remember to offset...
-                versions.add(i+1);
-            }
-        }
-
-        storageManager.deleteSubject(subjectEntity);
+        List<Integer> versions = storageManager.deleteAllSchemasFromSubject(subjectEntity);
 
         return versions;
     }
@@ -315,6 +331,12 @@ public class SchemaRegistryResource {
     @RolesAllowed("catalog_user")
     public RegisterResponse addSchema(@PathParam("subject") String subject, TerseSchema request) {
         logger.debugv("addSchema {0} {1}", subject, request);
+
+        boolean isCompatible = schemaCompatibilityResource.determineCompatibility(subject, request.schema);
+
+        if(!isCompatible) {
+            throw new BadRequestException("incompatible schema");
+        }
 
         int id = storageManager.register(subject, request.schema);
 

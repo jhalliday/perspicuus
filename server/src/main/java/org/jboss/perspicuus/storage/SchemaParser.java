@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2018, 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,12 @@ public interface SchemaParser {
     Optional<String> parseToCanonicalForm(String rawSchema);
 
     /**
-     * Determine the compatibility of two schema, according to appropriate type specific rules.
+     * Determine the compatibility of schemas, according to appropriate type specific rules.
      *
      * @param compatibilityLevel
-     * @param existingSchema
+     * @param existingSchemas
      * @param proposedSchema
      * @return
      */
-    boolean isCompatibleWith(String compatibilityLevel, String existingSchema, String proposedSchema);
+    boolean isCompatibleWith(String compatibilityLevel, List<String> existingSchemas, String proposedSchema);
 }
