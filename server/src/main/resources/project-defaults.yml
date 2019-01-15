@@ -1,6 +1,6 @@
 
 hibernate:
-  show_sql: true
+  show_sql: false
   hbm2ddl:
     auto: create
 

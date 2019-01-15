@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2017-2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,20 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
     }
 
     @Test
+    public void testRegisterAndReadbackOfProtobuf() throws Exception {
+
+        String subject = "testprotobufsubject";
+        Map<String,Object> schema = getProtobufSchema(new String[] {"fieldone"});
+
+        int schemaId = registerSchema(subject, schema);
+
+        String result = client.target(URL_BASE+"/schemas/ids/"+schemaId).request(CONTENT_TYPE).get(String.class);
+        Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+
+        assertEquals(schema, actualResultMap);
+    }
+
+    @Test
     public void testSearch() throws Exception {
 
         String subject = "searchsubject";
@@ -89,7 +103,7 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
         String result = client.target(URL_BASE + "/subjects/"+subject).request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
 
-        assertEquals(schema, actualResultMap);
+        assertEquals(schema.get("schema"), actualResultMap.get("schema"));
     }
 
     @Test
@@ -114,7 +128,7 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
         }
 
         try {
-            client.target(URL_BASE + "/subjects/"+subject+"/1").request(CONTENT_TYPE).get(String.class);
+            client.target(URL_BASE + "/subjects/"+subject+"/versions/1").request(CONTENT_TYPE).get(String.class);
             fail("Should throw NotFound");
         } catch (NotFoundException e) {
             // expected
@@ -142,6 +156,13 @@ public class SchemaRegistryResourceIT extends AbstractResourceIT {
         actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
 
         assertEquals(expectedResult, actualResultMap);
+
+        try {
+            client.target(URL_BASE + "/subjects/"+subject+"/versions/"+100).request(CONTENT_TYPE).get(String.class);
+            fail("Should throw NotFound");
+        } catch (NotFoundException e) {
+            // expected
+        }
     }
 
     @Test

@@ -15,7 +15,7 @@ package org.jboss.perspicuus.rest;
 import io.swagger.annotations.*;
 import org.jboss.logging.Logger;
 import org.jboss.perspicuus.storage.SchemaEntity;
-import org.jboss.perspicuus.storage.SchemaParser;
+import org.jboss.perspicuus.parsers.SchemaParser;
 import org.jboss.perspicuus.storage.StorageManager;
 import org.jboss.perspicuus.storage.SubjectEntity;
 

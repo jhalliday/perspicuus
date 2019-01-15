@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2018, 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +12,11 @@
  */
 package org.jboss.perspicuus.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
+import org.jboss.perspicuus.parsers.AvroSchemaParser;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -45,13 +44,30 @@ public abstract class AbstractResourceIT {
 
     protected int registerSchema(String subject, Map<String,Object> request) throws Exception {
         String schemaString = objectMapper.writeValueAsString(request);
+        return registerSchema(subject, schemaString);
+    }
 
-        String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
+    protected int registerSchema(String subject, String envelopeString) throws Exception {
+        String result = client.target(URL_BASE+"/subjects/"+subject+"/versions").request(CONTENT_TYPE).post(Entity.json(envelopeString), String.class);
         Map<String,Object> actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
         assertEquals(1, actualResultMap.size());
         assertTrue(actualResultMap.containsKey("id"));
         int id = (Integer)actualResultMap.get("id");
         return id;
+
+    }
+
+    protected void setCompatibilityLevel(String subject, String level) throws Exception {
+        Map<String,String> config = new HashMap<>();
+        config.put("compatibility", level);
+        String result = client.target(URL_BASE+"/config/"+subject).request(CONTENT_TYPE).put(Entity.json(config), String.class);
+        Map<String,Object> resultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+        assertEquals(1, resultMap.size());
+        assertEquals(level, resultMap.get("compatibility"));
+    }
+
+    public String canonicalString(String avroSchema) {
+        return new AvroSchemaParser().parseToCanonicalForm(avroSchema).get();
     }
 
     public Map<String,Object> getAvroSchema() {
@@ -84,8 +100,28 @@ public abstract class AbstractResourceIT {
         Map<String,Object> schema = new HashMap<>();
         schema.put("properties", properties);
 
-            Map<String, Object> schemaOuterMap = wrapInEnvelope(objectMapper.writeValueAsString(schema));
-            return schemaOuterMap;
+        Map<String, Object> schemaOuterMap = wrapInEnvelope(objectMapper.writeValueAsString(schema));
+        return schemaOuterMap;
+    }
+
+    public Map<String,Object> getProtobufSchema(String[] fieldnames) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("//\n");
+        stringBuilder.append("syntax = \"proto3\";\n");
+        stringBuilder.append("package test;\n\n");
+        stringBuilder.append("message TestMessage {\n");
+        for(int i = 0; i < fieldnames.length; i++) {
+            stringBuilder.append("  string ");
+            stringBuilder.append(fieldnames[i]);
+            stringBuilder.append(" = ");
+            stringBuilder.append(i);
+            stringBuilder.append(";\n");
+        }
+        stringBuilder.append("}\n");
+
+        String schema = stringBuilder.toString();
+        Map<String, Object> schemaOuterMap = wrapInEnvelope(schema);
+        return schemaOuterMap;
     }
 
     public Map<String,Object> wrapInEnvelope(String schema) {

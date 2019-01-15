@@ -12,6 +12,8 @@
  */
 package org.jboss.perspicuus.storage;
 
+import org.jboss.perspicuus.parsers.SchemaParser;
+
 import javax.persistence.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

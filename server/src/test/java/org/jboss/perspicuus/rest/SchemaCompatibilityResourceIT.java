@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2018, 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.junit.Test;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test cases for schema compatibility API.
@@ -59,12 +58,25 @@ public class SchemaCompatibilityResourceIT extends AbstractResourceIT {
 
         String subject = "compatibilityconfigsubject";
 
+        try {
+            client.target(URL_BASE+"/config/"+subject).request(CONTENT_TYPE).get(String.class);
+            fail("Should fail with NotFound");
+        } catch (NotFoundException e) {
+            // expected
+        }
+
+
         Map<String,String> config = new HashMap<>();
         config.put("compatibility", "BACKWARD");
         String result = client.target(URL_BASE+"/config/"+subject).request(CONTENT_TYPE).put(Entity.json(config), String.class);
         Map<String,Object> resultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
         assertEquals(1, resultMap.size());
         assertEquals("BACKWARD", resultMap.get("compatibility"));
+
+        result = client.target(URL_BASE+"/config/"+subject).request(CONTENT_TYPE).get(String.class);
+        resultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
+        assertEquals(1, resultMap.size());
+        assertEquals("BACKWARD", resultMap.get("compatibilityLevel"));
     }
 
     @Test
@@ -124,6 +136,13 @@ public class SchemaCompatibilityResourceIT extends AbstractResourceIT {
 
         assertTrue(isCompatible);
 
+        try {
+            client.target(URL_BASE + "/compatibility/subjects/" + subject + "/versions/100").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
+            fail("Should fail with NotFound");
+        } catch(NotFoundException e) {
+            // expected
+        }
+
         schema = new HashMap<>();
         schemaObject = SchemaBuilder.record("recordname").fields().name("fieldA").type().intType().noDefault()
                 .name("fieldB").type().intType().noDefault().endRecord();
@@ -135,5 +154,23 @@ public class SchemaCompatibilityResourceIT extends AbstractResourceIT {
         isCompatible = (Boolean)actualResultMap.get("is_compatible");
 
         assertFalse(isCompatible);
+    }
+
+    @Test
+    public void testNonExistentCompatibility() throws Exception {
+
+        String subject = "nonExistentSubject";
+
+        Map<String,Object> schema = new HashMap<>();
+        Schema schemaObject = SchemaBuilder.record("recordname").fields().name("fieldA").type().intType().noDefault().endRecord();
+        schema.put("schema", schemaObject.toString());
+        String schemaString = objectMapper.writeValueAsString(schema);
+
+        try {
+            client.target(URL_BASE + "/compatibility/subjects/" + subject + "/versions/1").request(CONTENT_TYPE).post(Entity.json(schemaString), String.class);
+            fail("Should fail with NotFound");
+        } catch(NotFoundException e) {
+            // expected
+        }
     }
 }

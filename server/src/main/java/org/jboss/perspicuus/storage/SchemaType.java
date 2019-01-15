@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2018, 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,11 @@
  */
 package org.jboss.perspicuus.storage;
 
+import org.jboss.perspicuus.parsers.AvroSchemaParser;
+import org.jboss.perspicuus.parsers.JsonSchemaSchemaParser;
+import org.jboss.perspicuus.parsers.ProtobufSchemaParser;
+import org.jboss.perspicuus.parsers.SchemaParser;
+
 /**
  * The set of Schema dialects that the system knows how to handle.
  *
@@ -21,6 +26,7 @@ package org.jboss.perspicuus.storage;
 public enum SchemaType {
 
     AVRO(new AvroSchemaParser()),
+    PROTOBUF(new ProtobufSchemaParser()),
     JSON_SCHEMA(new JsonSchemaSchemaParser());
 
     private final SchemaParser schemaParser;
