@@ -1,0 +1,32 @@
+syntax = "proto3";
+package test;
+
+message Channel {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string foo = 4;
+  bool bar = 5;
+}
+
+message Request {
+  .example.snth.Field field2 = 1;
+}
+
+
+message NextRequest {
+  string name = 1;
+  map<string, int32> a_map = 3;
+}
+
+message PreviousRequest {
+  oneof test_oneof {
+    int64 id = 1;
+    bool is_active = 2;
+  }
+}
+
+service ChannelChanger {
+  rpc Next(stream NextRequest) returns (Channel);
+  rpc Previous(PreviousRequest) returns (stream Channel);
+}

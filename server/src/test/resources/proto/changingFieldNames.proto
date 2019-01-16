@@ -1,0 +1,40 @@
+syntax = "proto3";
+package test;
+
+message Channel {
+  reserved "name", "foo";
+  int64 channel_id = 1;
+  string name_2 = 2;
+  string description_3 = 3;
+  string foo_baz = 4;
+  bool bar = 5;
+}
+
+message NextRequest {
+  map<string, bool> b_map = 1;
+}
+
+message PreviousRequest {
+  oneof test_oneof {
+    string name_2 = 4;
+    bool is_active = 9;
+  }
+
+  enum NestedEnum {
+    option allow_alias = true;
+
+    UNO = 1;
+    TWO = 2;
+    DOS = 2;
+  }
+}
+
+enum AnotherEnum {
+  ABC = 1;
+  GHI = 2;
+}
+
+service ChannelChanger {
+  rpc Next(stream NextRequest) returns (Channel);
+  rpc Previous(PreviousRequest) returns (stream Channel);
+}

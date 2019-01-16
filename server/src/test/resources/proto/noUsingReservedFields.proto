@@ -1,0 +1,62 @@
+syntax = "proto3";
+package test;
+
+message Channel {
+  reserved 4, 8 to 11;
+  reserved "foo", "bar";
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message Request {
+  reserved 2;
+  reserved "field2";
+  .example.snth.Field field1 = 1;
+}
+
+message NextRequest {
+  reserved 3;
+  reserved "a_map";
+}
+
+message PreviousRequest {
+  reserved 4;
+  reserved "no_use";
+  oneof test_oneof {
+    int64 id = 1;
+    bool is_active = 2;
+  }
+}
+
+enum WithAllowAlias {
+  reserved "DONTUSE";
+  reserved 2;
+  option allow_alias = true;
+  UNKNOWN = 0;
+  STARTED = 1;
+  RUNNING = 1;
+}
+
+enum NoWithAllowAlias {
+  reserved "DONTUSE2";
+  reserved 2;
+  UNKNOWN2 = 0;
+  STARTED2 = 1;
+}
+
+message IHaveAnEnum {
+  int32 id = 1;
+
+  enum IAmTheEnum {
+    reserved "NONE";
+    reserved 101;
+    ALL = 0;
+    SOME = 100;
+  }
+}
+
+service ChannelChanger {
+	rpc Next(stream NextRequest) returns (Channel);
+	rpc Previous(PreviousRequest) returns (stream Channel);
+}

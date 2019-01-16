@@ -1,0 +1,21 @@
+syntax = "proto3";
+package main;
+
+message A {
+    message I {
+        int32 index = 1;
+    }
+
+    string id = 1;
+    I i = 2;
+}
+
+message B {
+    message I {
+        reserved 2;
+        int32 index = 1;
+    }
+
+    string id = 1;
+    I i = 2;
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package test;
+
+message Channel {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string foo = 4;
+  bool bar = 5;
+}
+
+message NextRequest {}
+message PreviousRequest {}
+
+service ChannelChanger {
+  rpc Next(NextRequest) returns (ChannelDifferent);
+  rpc Previous(stream PreviousRequest) returns (stream Channel);
+}
