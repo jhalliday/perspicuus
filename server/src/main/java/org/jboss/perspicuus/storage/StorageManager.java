@@ -78,7 +78,19 @@ public class StorageManager {
         }
         Query query = entityManager.createQuery("SELECT s FROM SchemaEntity s WHERE s.id IN :idList");
         query.setParameter("idList", subjectEntity.getSchemaIds());
-        List<SchemaEntity> results =  query.getResultList(); // TODO enforce ordering.
+
+        Map<Integer,SchemaEntity> map = new HashMap<>();
+        for(SchemaEntity e : (List<SchemaEntity>)query.getResultList()) {
+            map.put(e.getId(), e);
+        }
+        List<SchemaEntity> results =  new ArrayList<>(map.size());
+        for(Integer i : subjectEntity.getSchemaIds()) {
+            SchemaEntity schemaEntity = map.get(i);
+            if(schemaEntity != null) {
+                results.add(map.get(i));
+            }
+        }
+
         return results;
     }
 
