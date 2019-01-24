@@ -240,6 +240,7 @@ public class StorageManager {
         EntityManager entityManager = threadEntityManager.get();
 
         SchemaGroupEntity schemaGroupEntity = new SchemaGroupEntity();
+        schemaGroupEntity.setSchemaIds(new HashSet<>());
 
         entityManager.persist(schemaGroupEntity);
         int id = schemaGroupEntity.getId();
