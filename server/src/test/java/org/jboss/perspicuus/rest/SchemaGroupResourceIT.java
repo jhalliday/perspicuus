@@ -46,7 +46,7 @@ public class SchemaGroupResourceIT extends AbstractResourceIT {
         List<Integer> membersList = getMembers(Integer.parseInt(groupId));
 
         assertEquals(1, membersList.size());
-        assertEquals(new Integer(1), membersList.get(0));
+        assertEquals(Integer.valueOf(1), membersList.get(0));
 
         client.target(URL_BASE+"/groups/"+groupId+"/1").request(CONTENT_TYPE).delete();
 

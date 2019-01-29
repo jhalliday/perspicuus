@@ -46,7 +46,6 @@ public class TransactionInterceptor implements ContainerRequestFilter, Container
         Integer count = reentrantCounter.get();
         if(count != null) {
             reentrantCounter.set(count+1);
-            Thread.dumpStack();
             return;
         }
         reentrantCounter.set(1);

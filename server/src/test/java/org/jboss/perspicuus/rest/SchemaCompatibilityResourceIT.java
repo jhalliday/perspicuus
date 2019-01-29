@@ -51,6 +51,9 @@ public class SchemaCompatibilityResourceIT extends AbstractResourceIT {
         resultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
         assertEquals(1, resultMap.size());
         assertEquals("BACKWARD", resultMap.get("compatibilityLevel"));
+
+        config.put("compatibility", "NONE");
+        client.target(URL_BASE+"/config").request(CONTENT_TYPE).put(Entity.json(config), String.class);
     }
 
     @Test
@@ -107,7 +110,7 @@ public class SchemaCompatibilityResourceIT extends AbstractResourceIT {
         actualResultMap = objectMapper.readValue(result, new TypeReference<Map<String,Object>>() {});
         isCompatible = (Boolean)actualResultMap.get("is_compatible");
 
-        assertFalse(isCompatible);
+        assertTrue(isCompatible);
     }
 
     @Test
