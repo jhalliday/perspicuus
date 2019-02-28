@@ -27,7 +27,12 @@
     <repositories>
         <repository>
             <id>pnc</id>
-            <url>http://indy.cloud.pnc.engineering.redhat.com/api/group/builds-untested+shared-imports/</url>
+            <url>http://indy.psi.redhat.com/api/group/builds-untested+shared-imports/</url>
+        </repository>
+
+        <repository>
+            <id>pnctmp</id>
+            <url>http://indy.psi.redhat.com/api/content/maven/group/temporary-builds/</url>
         </repository>
 
         <repository>
@@ -47,7 +52,7 @@
 
         <pluginRepository>
             <id>pnc</id>
-            <url>http://indy.cloud.pnc.engineering.redhat.com/api/group/builds-untested+shared-imports/</url>
+            <url>http://indy.psi.redhat.com/api/group/builds-untested+shared-imports/</url>
         </pluginRepository>
 
         <pluginRepository>
@@ -257,7 +262,7 @@
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>0.1.19</version>
+            <version>1.0.1</version>
         </dependency>
 
         <!-- we get these for free on java8, but need them explicitly for java9 onwards -->
