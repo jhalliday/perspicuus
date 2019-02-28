@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2017, 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -247,80 +247,6 @@ public class SchemaRegistryClient {
         } catch(NotFoundException e) {
             return;
         }
-    }
-
-
-    public void annotate(int objectId, String key, String value) throws IOException {
-        client.target(serverURL+"/tags/"+objectId+"/"+key).request(CONTENT_TYPE).post(Entity.json(value), String.class);
-    }
-
-    public void deleteAnnotation(int schemaId, String key) throws IOException {
-        try {
-            client.target(serverURL + "/tags/" + schemaId + "/" + key).request(CONTENT_TYPE).delete();
-        } catch(NotFoundException e) {
-            return;
-        }
-    }
-
-    public Map<String,String> getAnnotations(int objectId) throws IOException {
-        try {
-            String resultString = client.target(serverURL + "/tags/" + objectId).request(CONTENT_TYPE).get(String.class);
-            Map<String, String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String, String>>() {
-            });
-            return resultMap;
-        } catch(NotFoundException e) {
-            return null;
-        }
-    }
-
-    public String getAnnotation(int objectId, String key) throws IOException {
-        try {
-            String resultString = client.target(serverURL + "/tags/" + objectId + "/" + key).request(CONTENT_TYPE).get(String.class);
-            Map<String, String> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String, String>>() {});
-            return resultMap.get(key);
-        } catch (NotFoundException e) {
-            return null;
-        }
-    }
-
-    public List<Integer> findSchemasMatching(String searchTerm) throws Exception {
-
-        String result = client.target(serverURL+"/schemas/matching/"+searchTerm).request(CONTENT_TYPE).get(String.class);
-        List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
-
-        return ids;
-    }
-
-    public List<Integer> findSimilarSchemas(int id) throws Exception {
-
-        String result = client.target(serverURL+"/schemas/similar/"+id).request(CONTENT_TYPE).get(String.class);
-        List<Integer> ids = objectMapper.readValue(result, new TypeReference<List<Integer>>() {});
-
-        return ids;
-    }
-
-    public Set<Integer> getSchemaGroupMembers(int groupId) throws Exception {
-
-        String result = client.target(serverURL+"/groups/"+groupId).request(CONTENT_TYPE).get(String.class);
-        Set<Integer> ids = objectMapper.readValue(result, new TypeReference<Set<Integer>>() {});
-
-        return ids;
-    }
-
-    public int createGroup() throws Exception {
-
-        String result = client.target(serverURL+"/groups").request().post(Entity.json("{}"), String.class);
-        return Integer.parseInt(result);
-    }
-
-    public void addSchemaToGroup(int groupId, int schemaId) throws Exception {
-
-        client.target(serverURL+"/groups/"+groupId+"/"+schemaId).request().put(Entity.json(""));
-    }
-
-    public void removeSchemaFromGroup(int groupId, int schemaId) throws Exception {
-
-        client.target(serverURL+"/groups/"+groupId+"/"+schemaId).request().delete();
     }
 
     public boolean determineCompatibility(String subject, String version, String schema) throws Exception {

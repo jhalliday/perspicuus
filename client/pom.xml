@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!--
-        Copyright 2017 Red Hat, Inc. and/or its affiliates.
+        Copyright 2017, 2019 Red Hat, Inc. and/or its affiliates.
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
 
     <groupId>org.jboss.perspicuus</groupId>
     <artifactId>perspicuus-client</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
 
     <name>JBoss Perspicuus (Client)</name>
 
     <properties>
-        <version.wildfly.swarm>2017.12.1</version.wildfly.swarm>
+        <version.thorntail>2.3.0.Final</version.thorntail>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -40,9 +40,9 @@
         <plugins>
 
             <plugin>
-                <groupId>org.wildfly.swarm</groupId>
-                <artifactId>wildfly-swarm-plugin</artifactId>
-                <version>${version.wildfly.swarm}</version>
+                <groupId>io.thorntail</groupId>
+                <artifactId>thorntail-maven-plugin</artifactId>
+                <version>${version.thorntail}</version>
                 <executions>
 
                     <execution>
@@ -136,7 +136,7 @@
 
         <dependency>
             <groupId>org.jboss.perspicuus</groupId>
-            <artifactId>server</artifactId>
+            <artifactId>perspicuus-server</artifactId>
             <type>war</type>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -154,7 +154,6 @@
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
             <version>2.3.0</version>
-            <scope>test</scope>
         </dependency>
 
     </dependencies>

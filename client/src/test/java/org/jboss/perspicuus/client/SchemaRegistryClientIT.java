@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2017, 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,90 +129,6 @@ public class SchemaRegistryClientIT {
 
         resultList = schemaRegistryClient.deleteSubject(subject);
         assertEquals(0, resultList.size());
-    }
-
-    @Test
-    public void testTagCreateAndReadback() throws Exception {
-
-        int id = 4;
-        String key = "clientTestKey";
-        String value = "testValue";
-
-        schemaRegistryClient.annotate(id, key, value);
-
-        String result = schemaRegistryClient.getAnnotation(id, key);
-
-        assertEquals(value, result);
-
-        Map<String,String> resultMap = schemaRegistryClient.getAnnotations(id);
-
-        assertEquals(1, resultMap.size());
-        assertEquals(value, resultMap.get(key));
-    }
-
-    @Test
-    public void testTagDelete() throws Exception {
-
-        int id = 4;
-        String key = "clientTestKey";
-        String value = "testValue";
-
-        schemaRegistryClient.annotate(id, key, value);
-
-        String result = schemaRegistryClient.getAnnotation(id, key);
-
-        assertEquals(value, result);
-
-        schemaRegistryClient.deleteAnnotation(id, key);
-
-        result = schemaRegistryClient.getAnnotation(id, key);
-
-        assertNull(result);
-    }
-
-    @Test
-    public void testSearchForMatchingFieldname() throws Exception {
-
-        int firstId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldone", "fieldtwo"}).toString() );
-        int secondId = schemaRegistryClient.registerSchema("clientMatchingSubject", getCustomTestSchema("clientMatchingSubject", new String[] { "fieldthree", "fieldfour"}).toString() );
-
-        List<Integer> ids = schemaRegistryClient.findSchemasMatching("fieldthree");
-
-        assertEquals(1, ids.size());
-        assertEquals((Integer)secondId, ids.get(0));
-    }
-
-    @Test
-    public void testSearchForSimilarSchemas() throws Exception {
-
-        int firstId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldA", "fieldsimilarone", "fieldsimilartwo"}).toString() );
-        int secondId = schemaRegistryClient.registerSchema("clientSimilarSubject", getCustomTestSchema("clientSimilarSubject", new String[] { "fieldB", "fieldsimilarone", "fieldsimilartwo"}).toString() );
-
-        List<Integer> ids = schemaRegistryClient.findSimilarSchemas(firstId);
-
-        // should match at least self and similar, plus maybe others - depending on order the tests run the index may not be empty when we start
-        assertTrue( ids.size() >= 2);
-
-        assertEquals((Integer)firstId, ids.get(0));
-        assertEquals((Integer)secondId, ids.get(1));
-    }
-
-    @Test
-    public void testGroupLifecycle() throws Exception {
-
-        int groupId = schemaRegistryClient.createGroup();
-
-        schemaRegistryClient.addSchemaToGroup(groupId, 100);
-
-        Set<Integer> members = schemaRegistryClient.getSchemaGroupMembers(groupId);
-
-        assertEquals(1, members.size());
-        assertEquals(new Integer(100), members.iterator().next());
-
-        schemaRegistryClient.removeSchemaFromGroup(groupId, 100);
-
-        members = schemaRegistryClient.getSchemaGroupMembers(groupId);
-        assertTrue(members.isEmpty());
     }
 
     @Test
