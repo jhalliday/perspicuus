@@ -4,15 +4,9 @@
 [[overview]]
 == Overview ==
 
-The system stores _Schemas_ (currently Avro, eventually polyglot).
+The system stores _Schemas_ (currently Avro, Protobuf or JsonSchema).
 
 _Schemas_, which are immutable, are organized into _Subjects_, which are named sequences of _Schema_ versions, such as a single table or file format evolving over time.
-
-In addition to being part of a _Subject_, each _Schema_ can be placed in any number of _SchemaGroups_.
-These may be used for various organizational purposes, such as to collect all the _Schemas_ for a given database, project or user.
-
-Both _Schemas_ and _SchemaGroups_ may be annotated by any number of _Tags_, which are string key-value pairs.
-These provide a general mechanism for attaching additional information which is outside of the _Schema_'s native format, such as design or usage insights.
 
 [[usage-server]]
 == Usage: Server ==
@@ -23,7 +17,7 @@ wildfly-swarm (resteasy, hibernate, hibernate-search).
 ....
 cd server
 mvn clean compile verify
-java -jar target/server-0.2.0-SNAPSHOT-swarm.jar
+java -jar target/perspicuus-server-0.3.0-SNAPSHOT-thorntail.jar
 ....
 
 The server uses two forms of storage: a relational database for canonical state (via hibernate) and a filesystem for full-text indexes (lucene via hibernate-search).
@@ -87,7 +81,7 @@ There is a Java wrapper library for the API, provided in the 'client' module.
 
 Building the client with integration tests enabled (which they are by default) requires that a local server be running. A bug in the wildfly-swarm tooling prevents this happening automatically, so start a server manually before building the client.
 ....
-cd server; java -jar target/server-0.1.0-SNAPSHOT-swarm.jar
+cd server; java -jar target/perspicuus-server-0.3.0-SNAPSHOT-thorntail.jar
 cd client; mvn clean install
 ....
 
