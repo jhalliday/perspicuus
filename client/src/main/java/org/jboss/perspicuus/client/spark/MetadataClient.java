@@ -17,7 +17,7 @@ import org.apache.avro.SchemaBuilder;
 
 import org.apache.spark.sql.types.*;
 import org.apache.spark.sql.types.StructType;
-import org.jboss.perspicuus.client.SchemaRegistryClient;
+import org.jboss.perspicuus.client.AvroSchemaRegistryClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,10 +31,10 @@ import java.util.List;
  */
 public class MetadataClient {
 
-    private final SchemaRegistryClient schemaRegistryClient;
+    private final AvroSchemaRegistryClient schemaRegistryClient;
 
     public MetadataClient(String url, String username, String password) throws IOException {
-        schemaRegistryClient = new SchemaRegistryClient(url, username, password);
+        schemaRegistryClient = new AvroSchemaRegistryClient(url, username, password);
     }
 
     public StructType resolve(String key) throws IOException {

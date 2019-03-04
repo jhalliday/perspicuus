@@ -14,7 +14,6 @@ package org.jboss.perspicuus.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.avro.Schema;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
@@ -44,19 +43,18 @@ public class SchemaRegistryClient {
     }
 
     /**
-     * Return a Schema corresponding to the given id, or null if there isn't one.
+     * Return a schema corresponding to the given id, or null if there isn't one.
      *
      * @param id
      * @return
      * @throws IOException
      */
-    public Schema getSchema(int id) throws IOException {
+    public String getStringSchema(int id) throws IOException {
         try {
             String resultString = client.target(serverURL + "/schemas/ids/"+id).request(CONTENT_TYPE).get(String.class);
             Map<String,Object> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,Object>>() {});
             String schemaString = (String)resultMap.get("schema");
-            Schema avroSchema = new Schema.Parser().parse(schemaString);
-            return avroSchema;
+            return schemaString;
         } catch(NotFoundException e) {
             return null;
         }
@@ -130,12 +128,11 @@ public class SchemaRegistryClient {
      * Return the schema matching the given one, within the scope of the specified subject, or null if there is no match.
      *
      * @param subject
-     * @param schema
+     * @param schemaInputString
      * @return
      * @throws IOException
      */
-    public Schema findInSubject(String subject, Schema schema) throws IOException {
-        String schemaInputString = schema.toString();
+    public String findStringInSubject(String subject, String schemaInputString) throws IOException {
         Map<String,Object> requestMap = new HashMap<>();
         requestMap.put("schema", schemaInputString);
         String requestString = objectMapper.writeValueAsString(requestMap);
@@ -143,8 +140,7 @@ public class SchemaRegistryClient {
             String resultString = client.target(serverURL + "/subjects/"+subject).request(CONTENT_TYPE).post(Entity.json(requestString), String.class);
             Map<String,Object> resultMap = objectMapper.readValue(resultString, new TypeReference<Map<String,Object>>() {});
             String schemaResultString = (String)resultMap.get("schema");
-            Schema avroSchema = new Schema.Parser().parse(schemaResultString);
-            return avroSchema;
+            return schemaResultString;
         } catch (NotFoundException e) {
             return null;
         }

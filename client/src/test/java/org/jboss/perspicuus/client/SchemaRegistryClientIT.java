@@ -33,31 +33,31 @@ public class SchemaRegistryClientIT {
 
     private final SchemaRegistryClient schemaRegistryClient = new SchemaRegistryClient("http://localhost:8080", "testuser", "testpass");
 
-    private Schema getTestSchema() throws Exception {
-        Schema schema = getCustomTestSchema("recordname", new String[] {"fieldname"});
+    private String getTestSchema() throws Exception {
+        String schema = getCustomTestSchema("recordname", new String[] {"fieldname"});
         return schema;
     }
 
-    private Schema getCustomTestSchema(String subject, String[] fieldnames) throws Exception {
+    private String getCustomTestSchema(String subject, String[] fieldnames) throws Exception {
         SchemaBuilder.FieldAssembler<Schema> fieldAssembler = SchemaBuilder.record(subject).fields();
         for(String fieldname : fieldnames) {
             fieldAssembler.name(fieldname).type().stringType().noDefault();
         }
         Schema schema = fieldAssembler.endRecord();
-        return schema;
+        return schema.toString();
     }
 
     @Test
     public void testRegisterAndReadback() throws Exception {
 
-        assertNull( schemaRegistryClient.getSchema(10000) );
+        assertNull( schemaRegistryClient.getStringSchema(10000) );
 
         String subject = "clienttestsubject";
-        Schema localSchema = getTestSchema();
+        String localSchema = getTestSchema();
 
         int schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
 
-        Schema remoteSchema = schemaRegistryClient.getSchema(schemaId);
+        String remoteSchema = schemaRegistryClient.getStringSchema(schemaId);
 
         assertEquals(localSchema, remoteSchema);
 
@@ -69,13 +69,13 @@ public class SchemaRegistryClientIT {
     public void testSearch() throws Exception {
 
         String subject = "clientsearchsubject";
-        Schema localSchema = getTestSchema();
+        String localSchema = getTestSchema();
 
-        assertNull( schemaRegistryClient.findInSubject(subject, localSchema) );
+        assertNull( schemaRegistryClient.findStringInSubject(subject, localSchema) );
 
         int schemaId = schemaRegistryClient.registerSchema(subject, localSchema.toString());
 
-        Schema remoteSchema = schemaRegistryClient.findInSubject(subject, localSchema);
+        String remoteSchema = schemaRegistryClient.findStringInSubject(subject, localSchema);
 
         assertEquals(localSchema, remoteSchema);
     }
@@ -84,7 +84,7 @@ public class SchemaRegistryClientIT {
     public void testSubjectVersions() throws Exception {
 
         String subject = "clientversionsubject";
-        Schema localSchema = getTestSchema();
+        String localSchema = getTestSchema();
 
         assertNull( schemaRegistryClient.listVersions(subject) );
 
@@ -138,7 +138,7 @@ public class SchemaRegistryClientIT {
 
         schemaRegistryClient.registerSchema(subject, getTestSchema().toString());
 
-        Schema compatibleSchema = getTestSchema();
+        String compatibleSchema = getTestSchema();
 
         boolean isCompatible = schemaRegistryClient.determineCompatibility(subject, "latest", compatibleSchema.toString());
 

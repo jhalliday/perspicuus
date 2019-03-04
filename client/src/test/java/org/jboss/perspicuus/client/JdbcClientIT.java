@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  */
 public class JdbcClientIT {
 
-    private final SchemaRegistryClient schemaRegistryClient = new SchemaRegistryClient("http://localhost:8080", "testuser", "testpass");
+    private final AvroSchemaRegistryClient schemaRegistryClient = new AvroSchemaRegistryClient("http://localhost:8080", "testuser", "testpass");
 
     private final static String catalogName = "CLIENT_TEST";
     private final static String tableName = "TEST_TABLE";
