@@ -32,6 +32,10 @@ swarm:
 
   datasources:
     jdbc-drivers:
+      org-postgresql:
+        driver-class-name: org.postgresql.Driver
+        xa-datasource-class-name: org.postgresql.xa.PGXADataSource
+        driver-module-name: org.postgresql
       com-mysql:
         driver-class-name: com.mysql.cj.jdbc.Driver
         xa-datasource-name: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
